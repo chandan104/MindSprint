@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(15);
+select plan(17);
 
 -- Fixtures (as table owner, bypasses RLS) ------------------------------------
 
@@ -30,14 +30,17 @@ insert into public.user_roles (user_id, role, school_id) values
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'teacher', '11111111-1111-1111-1111-111111111111'),
   ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'school_admin', '11111111-1111-1111-1111-111111111111');
 
-insert into public.assessment_modules (module_key, name) values ('memory_recall', 'Memory Recall');
+-- Seed data may already provide these; fixtures must not collide with it.
+insert into public.assessment_modules (module_key, name)
+values ('memory_recall', 'Memory Recall')
+on conflict (module_key) do nothing;
 insert into public.levels (id, module_key, name) values
   ('77777777-7777-7777-7777-777777777777', 'memory_recall', 'Level 1');
 insert into public.level_versions (id, level_id, version, config) values
   ('88888888-8888-8888-8888-888888888888', '77777777-7777-7777-7777-777777777777', 1, '{}');
 
 insert into public.feature_flags (key, enabled, description)
-values ('memory_module', true, 'test flag');
+values ('rls_test_flag', true, 'test flag');
 
 -- Teacher of School A --------------------------------------------------------
 
@@ -103,7 +106,7 @@ select lives_ok(
   'owning teacher can insert session events');
 
 select results_eq(
-  'select count(*)::int from public.feature_flags',
+  $$select count(*)::int from public.feature_flags where key = 'rls_test_flag'$$,
   array[1], 'teacher can read feature flags');
 
 select results_eq(
@@ -139,6 +142,15 @@ select throws_ok(
 select is(
   (select count(*) > 0 from public.audit_logs),
   true, 'school admin can read audit logs');
+
+select results_eq(
+  'select count(*)::int from public.user_roles',
+  array[2], 'school admin sees own-school user_roles (teacher + self)');
+
+select results_eq(
+  $$select count(*)::int from public.user_roles
+     where user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'$$,
+  array[1], 'school admin can see the teacher''s role row for the teachers page');
 
 -- Anonymous ------------------------------------------------------------------
 

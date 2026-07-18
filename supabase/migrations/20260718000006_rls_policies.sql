@@ -60,16 +60,34 @@ revoke all on all tables in schema public from anon;
 -- profiles: users see/update themselves; super_admin sees all ---------------
 
 create policy profiles_select on public.profiles for select
-  using (id = auth.uid() or public.is_super_admin());
+  using (
+    id = auth.uid()
+    or public.is_super_admin()
+    -- School admins see profiles of users who hold a role in their school.
+    or (
+      public.auth_role() = 'school_admin'
+      and exists (
+        select 1 from public.user_roles ur
+        where ur.user_id = profiles.id
+          and ur.school_id = public.auth_school_id()
+      )
+    )
+  );
 create policy profiles_update on public.profiles for update
   using (id = auth.uid()) with check (id = auth.uid());
 create policy profiles_admin_write on public.profiles for insert
   with check (id = auth.uid() or public.is_super_admin());
 
--- user_roles: readable by self and super_admin; writable by super_admin only
+-- user_roles: readable by self, super_admin, and the school_admin of the
+-- same school (the admin dashboard lists a school's teachers); writable by
+-- super_admin only.
 
 create policy user_roles_select on public.user_roles for select
-  using (user_id = auth.uid() or public.is_super_admin());
+  using (
+    user_id = auth.uid()
+    or public.is_super_admin()
+    or (public.auth_role() = 'school_admin' and school_id = public.auth_school_id())
+  );
 create policy user_roles_write on public.user_roles for all
   using (public.is_super_admin()) with check (public.is_super_admin());
 

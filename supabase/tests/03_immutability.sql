@@ -18,7 +18,9 @@ insert into auth.users (id, email)
 values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'teacher-a@test.local');
 insert into public.user_roles (user_id, role, school_id)
 values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'teacher', '11111111-1111-1111-1111-111111111111');
-insert into public.assessment_modules (module_key, name) values ('memory_recall', 'Memory Recall');
+insert into public.assessment_modules (module_key, name)
+values ('memory_recall', 'Memory Recall')
+on conflict (module_key) do nothing;
 insert into public.levels (id, module_key, name)
 values ('77777777-7777-7777-7777-777777777777', 'memory_recall', 'Level 1');
 insert into public.level_versions (id, level_id, version, config)
