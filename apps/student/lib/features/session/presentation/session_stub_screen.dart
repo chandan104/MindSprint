@@ -1,6 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../../core/di/providers.dart';
+import '../../../core/timing/timing_service.dart';
+import '../../assessments/engine/session_recorder.dart';
 import '../../auth/presentation/auth_controller.dart';
 
 class SessionStubArgs {
@@ -15,26 +21,69 @@ class SessionStubArgs {
   });
 }
 
-/// Phase 1 stand-in for the assessment engine, with the REAL kiosk lock:
-/// back navigation is trapped and leaving requires the teacher's PIN. The
-/// assessment modules replace the body content in Phase 2; the lock stays.
-class SessionStubScreen extends ConsumerWidget {
+/// Phase 1 stand-in for the assessment engine that already runs the REAL
+/// measurement pipeline: a session id is minted, the monotonic TimingService
+/// starts, and session_started / session_aborted events are recorded to the
+/// local Drift store. Assessment modules replace the body in Phase 2; the
+/// kiosk lock (trapped back navigation, PIN-gated exit) stays.
+class SessionStubScreen extends ConsumerStatefulWidget {
   final SessionStubArgs args;
   const SessionStubScreen({super.key, required this.args});
 
-  Future<void> _requestExit(BuildContext context, WidgetRef ref) async {
-    final unlocked = await _showPinPrompt(context, ref);
-    // Imperative pop: PopScope(canPop: false) blocks system/back pops, but a
-    // direct Navigator.pop after PIN verification is the sanctioned exit.
-    if (unlocked && context.mounted) Navigator.of(context).pop();
+  @override
+  ConsumerState<SessionStubScreen> createState() => _SessionStubScreenState();
+}
+
+class _SessionStubScreenState extends ConsumerState<SessionStubScreen> {
+  late final String _sessionId;
+  late final TimingService _timing;
+  late final SessionRecorder _recorder;
+  Timer? _ticker;
+  int _elapsedMs = 0;
+
+  @visibleForTesting
+  String get debugSessionIdForTest => _sessionId;
+
+  @override
+  void initState() {
+    super.initState();
+    _sessionId = const Uuid().v4();
+    _timing = ref.read(timingServiceProvider);
+    _recorder = SessionRecorder(
+      sessionId: _sessionId,
+      timing: _timing,
+      store: DriftEventStore(ref.read(appDatabaseProvider)),
+    );
+    _timing.start();
+    _recorder.recordAndFlush('session_started');
+    _ticker = Timer.periodic(const Duration(milliseconds: 100), (_) {
+      if (mounted) setState(() => _elapsedMs = _timing.nowMs);
+    });
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void dispose() {
+    _ticker?.cancel();
+    _recorder.dispose();
+    super.dispose();
+  }
+
+  Future<void> _requestExit() async {
+    final unlocked = await _showPinPrompt(context, ref);
+    if (!unlocked || !mounted) return;
+    // Phase 1 sessions are always aborted (no assessment to complete yet).
+    await _recorder.recordAndFlush('session_aborted', {'reason': 'teacher_exit'});
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final seconds = (_elapsedMs / 1000).toStringAsFixed(1);
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _requestExit(context, ref);
+        if (!didPop) _requestExit();
       },
       child: Scaffold(
         body: SafeArea(
@@ -46,13 +95,13 @@ class SessionStubScreen extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        args.studentName,
+                        widget.args.studentName,
                         style: Theme.of(context).textTheme.titleLarge,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     OutlinedButton.icon(
-                      onPressed: () => _requestExit(context, ref),
+                      onPressed: _requestExit,
                       icon: const Icon(Icons.lock_outline),
                       label: const Text('Teacher exit'),
                     ),
@@ -74,6 +123,20 @@ class SessionStubScreen extends ConsumerWidget {
                       const Text(
                         'This screen is kiosk-locked: leaving it requires the teacher PIN.',
                         textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 32),
+                      Text('Session clock: ${seconds}s',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      Text(
+                        'Events recorded locally: ${_recorder.nextSeq - 1}',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          'Session ${_sessionId.substring(0, 8)}…',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                       ),
                     ],
                   ),
