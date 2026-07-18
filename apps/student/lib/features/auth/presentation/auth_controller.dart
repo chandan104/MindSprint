@@ -25,7 +25,15 @@ final appVersionProvider = Provider<String>((ref) {
 });
 
 /// Populated after a successful login; roster/session screens read flags here.
-final startupStateProvider = StateProvider<StartupState?>((ref) => null);
+class StartupStateNotifier extends Notifier<StartupState?> {
+  @override
+  StartupState? build() => null;
+
+  void set(StartupState value) => state = value;
+}
+
+final startupStateProvider =
+    NotifierProvider<StartupStateNotifier, StartupState?>(StartupStateNotifier.new);
 
 sealed class AuthUiState {
   const AuthUiState();
@@ -65,7 +73,7 @@ class AuthController extends Notifier<AuthUiState> {
         appVersion: ref.read(appVersionProvider),
       );
       final startup = await gate.check();
-      ref.read(startupStateProvider.notifier).state = startup;
+      ref.read(startupStateProvider.notifier).set(startup);
 
       final needsPin = !await ref.read(pinServiceProvider).hasPin();
       state = AuthSuccess(needsPinSetup: needsPin);

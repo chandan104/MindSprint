@@ -164,7 +164,23 @@ assessments, contradicting upload-at-end; roadmap item).
   reads** Â· `teacher_classes`
 
 **Content (data-driven, versioned)**
-- `assessment_modules` (module_key, name, enabled)
+- `assessment_modules` (module_key, name, enabled). Four modules, each
+  measuring a DIFFERENT cognitive ability (product rule: no near-duplicates):
+  | module_key | Name | Measures | Ships |
+  |---|---|---|---|
+  | `memory_recall` | Memory Recall | Visual working memory, recall speed | Phase 2 |
+  | `math_speed` | Mathematics Speed | Numerical processing, calculation speed | Phase 3 |
+  | `attention_focus` | Focus Tap | Selective attention, response inhibition, processing speed (go/no-go: tap targets, withhold on distractors; commission errors = inhibition failures, omission errors = attention lapses) | Phase 5+ |
+  | `pattern_recognition` | Pattern Detective | Fluid reasoning, logical pattern recognition (complete visual sequences: AB/ABC/AABB/ABB/mirror rules) | Phase 5+ |
+  All four consume the same event log, `tap_registered`/`answer_submitted`
+  payloads, and canonical-metrics pipeline — no engine changes per module.
+- **Difficulty tiers (product decision 2026-07-18):** every module ships
+  three predefined tiers — `easy` (slower pace, fewer items, longer thinking
+  time), `medium` (balanced), `hard` (faster pace, more items/distractors,
+  reduced display time). The tier is a `difficulty_tier` enum on `levels`
+  used for selection and fair benchmarking; every actual knob lives in the
+  level-version config JSON, validated by that module's contract schema —
+  no tier values are hardcoded anywhere.
 - `media_assets` (type: image/icon/audio/animation, storage path, uploaded_by,
   metadata) â€” the Media Library; `category_items` reference assets, never raw paths
 - `categories` Â· `category_items` (label + media_asset ref)

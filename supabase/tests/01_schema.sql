@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(32);
+select plan(33);
 
 select has_table('public', 'profiles', 'profiles exists');
 select has_table('public', 'user_roles', 'user_roles exists');
@@ -28,6 +28,7 @@ select has_table('public', 'audit_logs', 'audit_logs exists');
 select has_type('public', 'user_role', 'user_role enum exists');
 select has_type('public', 'session_status', 'session_status enum exists');
 select has_type('public', 'media_type', 'media_type enum exists');
+select has_type('public', 'difficulty_tier', 'difficulty_tier enum exists');
 
 select has_function('public', 'custom_access_token_hook', 'token hook exists');
 select has_function('public', 'auth_role', 'auth_role exists');

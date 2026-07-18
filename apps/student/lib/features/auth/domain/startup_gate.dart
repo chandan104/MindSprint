@@ -33,17 +33,16 @@ int compareVersions(String a, String b) {
 /// Runs after every successful login (online-required makes this free):
 /// blocks outdated clients, then loads server-side feature flags.
 class StartupGate {
-  final PlatformGateRepository _repository;
+  final PlatformGateRepository repository;
   final String appVersion;
 
-  StartupGate({required PlatformGateRepository repository, required this.appVersion})
-      : _repository = repository;
+  StartupGate({required this.repository, required this.appVersion});
 
   Future<StartupState> check() async {
-    final minimum = await _repository.minimumSupportedVersion();
+    final minimum = await repository.minimumSupportedVersion();
     if (minimum != null && compareVersions(appVersion, minimum) < 0) {
       throw const VersionBlockedFailure();
     }
-    return StartupState(featureFlags: await _repository.featureFlags());
+    return StartupState(featureFlags: await repository.featureFlags());
   }
 }

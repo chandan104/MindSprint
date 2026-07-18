@@ -58,8 +58,35 @@ void main() {
     expect(find.text('Aarav Sharma'), findsOneWidget);
   });
 
-  testWidgets('correct PIN unlocks and closes the prompt', (tester) async {
-    await tester.pumpWidget(_app());
+  testWidgets('correct PIN unlocks and leaves the session screen',
+      (tester) async {
+    // Push the session screen onto a base route so the unlock pop has
+    // somewhere to return to — mirroring real navigation.
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [pinServiceProvider.overrideWithValue(_FakePinService())],
+        child: MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const SessionStubScreen(args: _args),
+                    ),
+                  ),
+                  child: const Text('Launch'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Launch'));
+    await tester.pumpAndSettle();
+    expect(find.text('Aarav Sharma'), findsOneWidget);
 
     await tester.tap(find.text('Teacher exit'));
     await tester.pumpAndSettle();
@@ -68,5 +95,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Teacher PIN'), findsNothing);
+    expect(find.text('Aarav Sharma'), findsNothing);
+    expect(find.text('Launch'), findsOneWidget);
   });
 }

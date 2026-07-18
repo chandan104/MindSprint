@@ -28,7 +28,9 @@ insert into public.students (id, school_id, class_id, full_name, roll_number, bi
 
 insert into public.assessment_modules (module_key, name, enabled) values
   ('memory_recall', 'Memory Recall', true),
-  ('math_speed', 'Mathematics Speed', true);
+  ('math_speed', 'Mathematics Speed', true),
+  ('attention_focus', 'Focus Tap', true),
+  ('pattern_recognition', 'Pattern Detective', true);
 
 -- Categories + media library (placeholder storage paths) ---------------------
 
@@ -70,24 +72,51 @@ join assets a on a.storage_path = si.path;
 
 -- Starter levels (configs conform to packages/contracts/levels/v1) -----------
 
-insert into public.levels (id, module_key, name, difficulty_rank) values
-  ('00000000-0000-4000-8000-000000000401', 'memory_recall', 'Animals — Short Sequence', 1),
-  ('00000000-0000-4000-8000-000000000402', 'memory_recall', 'Fruits — Medium Sequence', 2),
-  ('00000000-0000-4000-8000-000000000403', 'memory_recall', 'Shapes — Long Sequence', 3),
-  ('00000000-0000-4000-8000-000000000404', 'math_speed', 'Addition Basics', 1),
-  ('00000000-0000-4000-8000-000000000405', 'math_speed', 'Mixed Operations', 2);
+-- Every module ships Easy / Medium / Hard. The tier is metadata; all actual
+-- knobs live in the config JSON and stay editable without code changes.
+insert into public.levels (id, module_key, name, difficulty, difficulty_rank) values
+  ('00000000-0000-4000-8000-000000000401', 'memory_recall', 'Animals — Easy', 'easy', 1),
+  ('00000000-0000-4000-8000-000000000402', 'memory_recall', 'Fruits — Medium', 'medium', 1),
+  ('00000000-0000-4000-8000-000000000403', 'memory_recall', 'Shapes — Hard', 'hard', 1),
+  ('00000000-0000-4000-8000-000000000404', 'math_speed', 'Addition — Easy', 'easy', 1),
+  ('00000000-0000-4000-8000-000000000405', 'math_speed', 'Mixed — Medium', 'medium', 1),
+  ('00000000-0000-4000-8000-000000000406', 'math_speed', 'All Operations — Hard', 'hard', 1),
+  ('00000000-0000-4000-8000-000000000407', 'attention_focus', 'Animal Watch — Easy', 'easy', 1),
+  ('00000000-0000-4000-8000-000000000408', 'attention_focus', 'Fruit Watch — Medium', 'medium', 1),
+  ('00000000-0000-4000-8000-000000000409', 'attention_focus', 'Shape Watch — Hard', 'hard', 1),
+  ('00000000-0000-4000-8000-000000000410', 'pattern_recognition', 'Shape Patterns — Easy', 'easy', 1),
+  ('00000000-0000-4000-8000-000000000411', 'pattern_recognition', 'Shape Patterns — Medium', 'medium', 1),
+  ('00000000-0000-4000-8000-000000000412', 'pattern_recognition', 'Shape Patterns — Hard', 'hard', 1);
 
 insert into public.level_versions (level_id, version, config) values
+  -- Memory Recall: longer sequences, shorter display, bigger grids as tiers rise
   ('00000000-0000-4000-8000-000000000401', 1,
-   '{"category_key": "animals", "sequence_length": 3, "display_time_ms": 1500, "inter_item_gap_ms": 400, "choice_grid_size": 6}'),
+   '{"category_key": "animals", "sequence_length": 3, "display_time_ms": 2000, "inter_item_gap_ms": 500, "choice_grid_size": 4}'),
   ('00000000-0000-4000-8000-000000000402', 1,
    '{"category_key": "fruits", "sequence_length": 4, "display_time_ms": 1200, "inter_item_gap_ms": 350, "choice_grid_size": 6}'),
   ('00000000-0000-4000-8000-000000000403', 1,
-   '{"category_key": "shapes", "sequence_length": 5, "display_time_ms": 1000, "inter_item_gap_ms": 300, "choice_grid_size": 6}'),
+   '{"category_key": "shapes", "sequence_length": 6, "display_time_ms": 800, "inter_item_gap_ms": 250, "choice_grid_size": 8}'),
+  -- Math Speed: more operations, larger operands, tighter time as tiers rise
   ('00000000-0000-4000-8000-000000000404', 1,
-   '{"operations": ["add"], "question_count": 10, "operand_min": 1, "operand_max": 20, "time_limit_ms_per_question": 15000}'),
+   '{"operations": ["add"], "question_count": 8, "operand_min": 1, "operand_max": 10, "time_limit_ms_per_question": 20000}'),
   ('00000000-0000-4000-8000-000000000405', 1,
-   '{"operations": ["add", "sub", "mul"], "question_count": 10, "operand_min": 1, "operand_max": 12, "time_limit_ms_per_question": 20000}');
+   '{"operations": ["add", "sub"], "question_count": 10, "operand_min": 1, "operand_max": 20, "time_limit_ms_per_question": 15000}'),
+  ('00000000-0000-4000-8000-000000000406', 1,
+   '{"operations": ["add", "sub", "mul"], "question_count": 12, "operand_min": 2, "operand_max": 12, "time_limit_ms_per_question": 10000}'),
+  -- Focus Tap: more stimuli, rarer targets, faster stream as tiers rise
+  ('00000000-0000-4000-8000-000000000407', 1,
+   '{"category_key": "animals", "stimulus_count": 15, "target_ratio": 0.5, "display_time_ms": 2000, "inter_stimulus_gap_ms": 800}'),
+  ('00000000-0000-4000-8000-000000000408', 1,
+   '{"category_key": "fruits", "stimulus_count": 25, "target_ratio": 0.35, "display_time_ms": 1200, "inter_stimulus_gap_ms": 500}'),
+  ('00000000-0000-4000-8000-000000000409', 1,
+   '{"category_key": "shapes", "stimulus_count": 40, "target_ratio": 0.25, "display_time_ms": 800, "inter_stimulus_gap_ms": 300}'),
+  -- Pattern Detective: harder rules, longer sequences, more options as tiers rise
+  ('00000000-0000-4000-8000-000000000410', 1,
+   '{"category_key": "shapes", "pattern_kinds": ["ab"], "question_count": 5, "sequence_length": 4, "option_count": 2, "time_limit_ms_per_question": 30000}'),
+  ('00000000-0000-4000-8000-000000000411', 1,
+   '{"category_key": "shapes", "pattern_kinds": ["ab", "abc", "aabb"], "question_count": 8, "sequence_length": 6, "option_count": 3, "time_limit_ms_per_question": 20000}'),
+  ('00000000-0000-4000-8000-000000000412', 1,
+   '{"category_key": "shapes", "pattern_kinds": ["abc", "aabb", "abb", "mirror"], "question_count": 10, "sequence_length": 8, "option_count": 4, "time_limit_ms_per_question": 15000}');
 
 -- Platform ops ---------------------------------------------------------------
 
@@ -97,6 +126,8 @@ insert into public.app_versions (version, minimum_supported_version, release_not
 insert into public.feature_flags (key, enabled, description) values
   ('memory_module', true,  'Memory Recall assessment module'),
   ('maths_module', false, 'Mathematics Speed assessment module'),
+  ('attention_module', false, 'Focus Tap (selective attention) module — ships Phase 5+'),
+  ('pattern_module', false, 'Pattern Detective (fluid reasoning) module — ships Phase 5+'),
   ('session_replay', false, 'Admin session replay UI'),
   ('benchmark_engine', false, 'Class/school benchmark aggregates'),
   ('adaptive_difficulty', false, 'On-device adaptive difficulty engine');

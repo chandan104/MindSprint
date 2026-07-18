@@ -55,8 +55,8 @@ class RecordedEvent {
 /// never waits on disk. One recorder per session; never reuse.
 class SessionRecorder {
   final String sessionId;
-  final TimingService _timing;
-  final EventStore _store;
+  final TimingService timing;
+  final EventStore store;
   final Duration flushInterval;
 
   final List<RecordedEvent> _buffer = [];
@@ -66,11 +66,10 @@ class SessionRecorder {
 
   SessionRecorder({
     required this.sessionId,
-    required TimingService timing,
-    required EventStore store,
+    required this.timing,
+    required this.store,
     this.flushInterval = const Duration(milliseconds: 500),
-  })  : _timing = timing,
-        _store = store {
+  }) {
     _timer = Timer.periodic(flushInterval, (_) => flush());
   }
 
@@ -86,7 +85,7 @@ class SessionRecorder {
       sessionId: sessionId,
       seq: ++_seq,
       eventType: eventType,
-      tMs: _timing.nowMs,
+      tMs: timing.nowMs,
       payload: payload,
     );
     _buffer.add(event);
@@ -107,7 +106,7 @@ class SessionRecorder {
     if (_buffer.isEmpty) return;
     final batch = List<RecordedEvent>.unmodifiable(_buffer);
     _buffer.clear();
-    await _store.saveEvents(batch);
+    await store.saveEvents(batch);
   }
 
   Future<void> dispose() async {
@@ -118,7 +117,7 @@ class SessionRecorder {
     if (_buffer.isNotEmpty) {
       final batch = List<RecordedEvent>.unmodifiable(_buffer);
       _buffer.clear();
-      await _store.saveEvents(batch);
+      await store.saveEvents(batch);
     }
   }
 }
