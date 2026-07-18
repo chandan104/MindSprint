@@ -62,6 +62,9 @@ select public.ensure_session_event_partitions(3);
 -- dev containers without pg_cron simply skip the schedule.
 do $do$
 begin
+  if exists (select 1 from pg_available_extensions where name = 'pg_cron') then
+    create extension if not exists pg_cron;
+  end if;
   if exists (select 1 from pg_extension where extname = 'pg_cron') then
     perform cron.schedule(
       'ensure-session-event-partitions',
