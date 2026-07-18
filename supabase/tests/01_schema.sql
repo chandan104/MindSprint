@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(30);
+select plan(32);
 
 select has_table('public', 'profiles', 'profiles exists');
 select has_table('public', 'user_roles', 'user_roles exists');
@@ -65,6 +65,24 @@ select is(
   )) -> 'claims' ->> 'school_id'),
   '11111111-1111-1111-1111-111111111111',
   'hook stamps school_id claim'
+);
+
+-- GoTrue runs the hook as supabase_auth_admin BEFORE claims exist. Without
+-- this grant + RLS policy, every token is issued claim-less and all RLS
+-- denies (a bug found in live verification — these assertions pin the fix).
+select is(
+  has_table_privilege('supabase_auth_admin', 'public.user_roles', 'SELECT'),
+  true,
+  'supabase_auth_admin holds SELECT on user_roles'
+);
+
+select is(
+  (select count(*)::int from pg_policies
+    where schemaname = 'public'
+      and tablename = 'user_roles'
+      and policyname = 'user_roles_auth_admin_read'),
+  1,
+  'RLS policy letting the token hook read user_roles exists'
 );
 
 select * from finish();

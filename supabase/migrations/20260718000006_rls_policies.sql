@@ -50,6 +50,19 @@ alter table public.audit_logs enable row level security;
 grant usage on schema public to authenticated;
 grant select, insert, update, delete on all tables in schema public to authenticated;
 
+-- service_role (server-side tooling, Studio, admin scripts) has bypassrls
+-- but still needs table grants once we stop relying on platform defaults.
+grant usage on schema public to service_role;
+grant all on all tables in schema public to service_role;
+grant usage, select on all sequences in schema public to service_role;
+
+-- Future tables created by migrations (which run as postgres) inherit the
+-- same grants automatically.
+alter default privileges for role postgres in schema public
+  grant select, insert, update, delete on tables to authenticated;
+alter default privileges for role postgres in schema public
+  grant all on tables to service_role;
+
 -- Narrow the broad grant for immutable / system-written tables.
 revoke update, delete on public.session_events from authenticated;
 revoke update, delete on public.session_metrics from authenticated;
@@ -90,6 +103,12 @@ create policy user_roles_select on public.user_roles for select
   );
 create policy user_roles_write on public.user_roles for all
   using (public.is_super_admin()) with check (public.is_super_admin());
+
+-- The access-token hook runs as supabase_auth_admin BEFORE claims exist, so
+-- claim-based policies see nothing. Without this policy every token is
+-- issued without role claims and all RLS checks deny.
+create policy user_roles_auth_admin_read on public.user_roles
+  for select to supabase_auth_admin using (true);
 
 -- schools -------------------------------------------------------------------
 
