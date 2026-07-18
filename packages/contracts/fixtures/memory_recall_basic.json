@@ -1,0 +1,28 @@
+{
+  "description": "Minimal valid Memory Recall session: 3-item animal sequence, one wrong tap, completed. Phase 1 uses this to prove schema validation; Phase 4 adds expected canonical metrics.",
+  "module_key": "memory_recall",
+  "level_config": {
+    "category_key": "animals",
+    "sequence_length": 3,
+    "display_time_ms": 1500,
+    "inter_item_gap_ms": 400,
+    "choice_grid_size": 6
+  },
+  "events": [
+    { "seq": 1, "t_ms": 0, "event_type": "session_started", "payload": {} },
+    { "seq": 2, "t_ms": 520, "event_type": "sequence_display_started", "payload": { "sequence": [
+      { "item_id": "cat", "label": "Cat" },
+      { "item_id": "dog", "label": "Dog" },
+      { "item_id": "lion", "label": "Lion" }
+    ] } },
+    { "seq": 3, "t_ms": 520, "event_type": "item_displayed", "payload": { "item_id": "cat", "label": "Cat", "position_index": 0 } },
+    { "seq": 4, "t_ms": 2420, "event_type": "item_displayed", "payload": { "item_id": "dog", "label": "Dog", "position_index": 1 } },
+    { "seq": 5, "t_ms": 4320, "event_type": "item_displayed", "payload": { "item_id": "lion", "label": "Lion", "position_index": 2 } },
+    { "seq": 6, "t_ms": 5820, "event_type": "sequence_hidden", "payload": {} },
+    { "seq": 7, "t_ms": 7013, "event_type": "tap_registered", "payload": { "target_kind": "choice", "item_id": "cat", "label": "Cat", "is_correct": true, "x": 120.5, "y": 340.0 } },
+    { "seq": 8, "t_ms": 8455, "event_type": "tap_registered", "payload": { "target_kind": "choice", "item_id": "tiger", "label": "Tiger", "is_correct": false, "x": 260.0, "y": 341.5 } },
+    { "seq": 9, "t_ms": 9310, "event_type": "tap_registered", "payload": { "target_kind": "choice", "item_id": "dog", "label": "Dog", "is_correct": true, "x": 190.0, "y": 342.0 } },
+    { "seq": 10, "t_ms": 10102, "event_type": "tap_registered", "payload": { "target_kind": "choice", "item_id": "lion", "label": "Lion", "is_correct": true, "x": 320.5, "y": 339.0 } },
+    { "seq": 11, "t_ms": 10650, "event_type": "session_completed", "payload": {} }
+  ]
+}

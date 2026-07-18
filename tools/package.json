@@ -1,0 +1,11 @@
+{
+  "name": "mindsprint-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate-contracts": "node validate-contracts.mjs"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1"
+  }
+}

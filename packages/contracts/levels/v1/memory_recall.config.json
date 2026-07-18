@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mindsprint/levels/v1/memory_recall.config.json",
+  "title": "Memory Recall level config v1",
+  "type": "object",
+  "required": [
+    "category_key",
+    "sequence_length",
+    "display_time_ms",
+    "inter_item_gap_ms",
+    "choice_grid_size"
+  ],
+  "properties": {
+    "category_key": { "type": "string", "minLength": 1 },
+    "sequence_length": { "type": "integer", "minimum": 2, "maximum": 12 },
+    "display_time_ms": { "type": "integer", "minimum": 250, "maximum": 10000 },
+    "inter_item_gap_ms": { "type": "integer", "minimum": 0, "maximum": 5000 },
+    "choice_grid_size": { "type": "integer", "minimum": 4, "maximum": 16 }
+  },
+  "additionalProperties": false
+}

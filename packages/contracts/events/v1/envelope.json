@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mindsprint/events/v1/envelope.json",
+  "title": "Session event envelope v1",
+  "description": "Every recorded event. seq is a strictly increasing per-session counter; t_ms is milliseconds since session start on the monotonic clock.",
+  "type": "object",
+  "required": ["seq", "t_ms", "event_type", "payload"],
+  "properties": {
+    "seq": { "type": "integer", "minimum": 1 },
+    "t_ms": { "type": "integer", "minimum": 0 },
+    "event_type": {
+      "enum": [
+        "session_started",
+        "session_completed",
+        "session_aborted",
+        "pause_started",
+        "pause_ended",
+        "app_backgrounded",
+        "app_foregrounded",
+        "sequence_display_started",
+        "item_displayed",
+        "sequence_hidden",
+        "question_displayed",
+        "tap_registered",
+        "answer_submitted"
+      ]
+    },
+    "payload": { "type": "object" }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mindsprint/levels/v1/math_speed.config.json",
+  "title": "Mathematics Speed level config v1",
+  "type": "object",
+  "required": [
+    "operations",
+    "question_count",
+    "operand_min",
+    "operand_max",
+    "time_limit_ms_per_question"
+  ],
+  "properties": {
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["add", "sub", "mul", "div"] }
+    },
+    "question_count": { "type": "integer", "minimum": 1, "maximum": 50 },
+    "operand_min": { "type": "integer", "minimum": 0 },
+    "operand_max": { "type": "integer", "minimum": 1 },
+    "time_limit_ms_per_question": { "type": "integer", "minimum": 1000, "maximum": 120000 }
+  },
+  "additionalProperties": false
+}

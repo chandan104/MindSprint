@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mindsprint/events/v1/payloads.json",
+  "title": "Per-event payload schemas v1",
+  "description": "Payloads are self-contained: they record what was actually displayed (item ids, labels, positions) so replay never needs to query content tables (ADR-009).",
+  "$defs": {
+    "session_started": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "session_completed": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "session_aborted": {
+      "type": "object",
+      "required": ["reason"],
+      "properties": { "reason": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "pause_started": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "pause_ended": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "app_backgrounded": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "app_foregrounded": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "sequence_display_started": {
+      "type": "object",
+      "required": ["sequence"],
+      "properties": {
+        "sequence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["item_id", "label"],
+            "properties": {
+              "item_id": { "type": "string" },
+              "label": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "item_displayed": {
+      "type": "object",
+      "required": ["item_id", "label", "position_index"],
+      "properties": {
+        "item_id": { "type": "string" },
+        "label": { "type": "string" },
+        "position_index": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "sequence_hidden": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "question_displayed": {
+      "type": "object",
+      "required": ["question_text", "expected_answer"],
+      "properties": {
+        "question_text": { "type": "string" },
+        "expected_answer": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "tap_registered": {
+      "type": "object",
+      "required": ["target_kind", "x", "y"],
+      "properties": {
+        "target_kind": { "enum": ["choice", "control", "outside"] },
+        "item_id": { "type": "string" },
+        "label": { "type": "string" },
+        "is_correct": { "type": "boolean" },
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "answer_submitted": {
+      "type": "object",
+      "required": ["answer", "is_correct"],
+      "properties": {
+        "answer": { "type": "string" },
+        "is_correct": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
