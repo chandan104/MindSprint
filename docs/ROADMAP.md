@@ -51,4 +51,6 @@ recommendations, readiness score.
 | Live Sessions panel (Realtime presence) | When schools ask to monitor in-progress assessments |
 | Offline roster/level caching | When pilot schools hit connectivity failures in practice |
 | Insights Engine (AI summaries of canonical metrics) | Post-benchmarks, with explicit never-diagnose guardrails |
-| Future modules: Pattern Recognition, Visual Search, Attention, Logic, Reaction, Color Recall, Shape Recognition, Sequence Recognition | One module per release cycle as content is designed |
+| Core suite modules 3–4: Focus Tap (`attention_focus`), Pattern Detective (`pattern_recognition`) — schema/contracts/seeds done, gameplay pending | One module per release cycle after Phase 4 |
+| Core suite modules 5–6 (reserved): Visual Search (`visual_search`), Sequence Logic (`sequence_logic`) — registered in schema/contracts/seeds with E/M/H levels, gameplay unscheduled | After modules 3–4 ship and pilot data validates the suite |
+| Additional modules beyond the core six (Reaction Test, Color Recall, Shape Recognition, …) | Only if pilot evidence shows a measurement gap the core six miss |

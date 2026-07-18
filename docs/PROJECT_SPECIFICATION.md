@@ -164,16 +164,23 @@ assessments, contradicting upload-at-end; roadmap item).
   reads** Â· `teacher_classes`
 
 **Content (data-driven, versioned)**
-- `assessment_modules` (module_key, name, enabled). Four modules, each
-  measuring a DIFFERENT cognitive ability (product rule: no near-duplicates):
+- `assessment_modules` (module_key, name, enabled). The core suite is SIX
+  modules, each measuring a DIFFERENT cognitive ability (product rule: no
+  near-duplicates). A module is live for teachers only when its feature flag
+  is on AND its gameplay has shipped in the app:
   | module_key | Name | Measures | Ships |
   |---|---|---|---|
   | `memory_recall` | Memory Recall | Visual working memory, recall speed | Phase 2 |
   | `math_speed` | Mathematics Speed | Numerical processing, calculation speed | Phase 3 |
   | `attention_focus` | Focus Tap | Selective attention, response inhibition, processing speed (go/no-go: tap targets, withhold on distractors; commission errors = inhibition failures, omission errors = attention lapses) | Phase 5+ |
   | `pattern_recognition` | Pattern Detective | Fluid reasoning, logical pattern recognition (complete visual sequences: AB/ABC/AABB/ABB/mirror rules) | Phase 5+ |
-  All four consume the same event log, `tap_registered`/`answer_submitted`
-  payloads, and canonical-metrics pipeline — no engine changes per module.
+  | `visual_search` | Visual Search | Visual attention, processing speed (find the target in a distractor grid; target-absent trials measure search thoroughness) | Reserved |
+  | `sequence_logic` | Sequence Logic | Sequential reasoning, planning (arrange scrambled sequences into correct order; multi-step, not single-rule) | Reserved |
+  All six consume the same event log, `tap_registered`/`answer_submitted`
+  payloads, canonical-metrics pipeline, per-module benchmarks, and
+  event-log replay — no engine changes per module. Reserved modules exist
+  today as: module row, feature flag (off), contract config schema, and
+  Easy/Medium/Hard seed levels — zero gameplay code.
 - **Difficulty tiers (product decision 2026-07-18):** every module ships
   three predefined tiers — `easy` (slower pace, fewer items, longer thinking
   time), `medium` (balanced), `hard` (faster pace, more items/distractors,

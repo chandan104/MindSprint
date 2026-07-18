@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mindsprint/levels/v1/visual_search.config.json",
+  "title": "Visual Search (visual attention / processing speed) level config v1",
+  "description": "Reserved module (gameplay unscheduled). Per trial, a grid of items appears and the student finds and taps the target as fast as possible. target_present_ratio < 1 adds trials where the correct answer is 'not there' (a 'no target' control), measuring search thoroughness.",
+  "type": "object",
+  "required": [
+    "category_key",
+    "trial_count",
+    "grid_size",
+    "time_limit_ms_per_trial"
+  ],
+  "properties": {
+    "category_key": { "type": "string", "minLength": 1 },
+    "trial_count": { "type": "integer", "minimum": 3, "maximum": 20 },
+    "grid_size": { "type": "integer", "minimum": 6, "maximum": 40 },
+    "target_present_ratio": { "type": "number", "minimum": 0.5, "maximum": 1 },
+    "time_limit_ms_per_trial": { "type": "integer", "minimum": 3000, "maximum": 60000 }
+  },
+  "additionalProperties": false
+}

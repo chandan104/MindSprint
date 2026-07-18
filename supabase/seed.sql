@@ -26,11 +26,16 @@ insert into public.students (id, school_id, class_id, full_name, roll_number, bi
 
 -- Assessment modules ---------------------------------------------------------
 
+-- The six-module core assessment suite (product decision 2026-07-18). Each
+-- measures a distinct cognitive domain; a module is live for teachers only
+-- when its feature flag is on AND its gameplay has shipped in the app.
 insert into public.assessment_modules (module_key, name, enabled) values
   ('memory_recall', 'Memory Recall', true),
   ('math_speed', 'Mathematics Speed', true),
   ('attention_focus', 'Focus Tap', true),
-  ('pattern_recognition', 'Pattern Detective', true);
+  ('pattern_recognition', 'Pattern Detective', true),
+  ('visual_search', 'Visual Search', true),
+  ('sequence_logic', 'Sequence Logic', true);
 
 -- Categories + media library (placeholder storage paths) ---------------------
 
@@ -86,7 +91,13 @@ insert into public.levels (id, module_key, name, difficulty, difficulty_rank) va
   ('00000000-0000-4000-8000-000000000409', 'attention_focus', 'Shape Watch — Hard', 'hard', 1),
   ('00000000-0000-4000-8000-000000000410', 'pattern_recognition', 'Shape Patterns — Easy', 'easy', 1),
   ('00000000-0000-4000-8000-000000000411', 'pattern_recognition', 'Shape Patterns — Medium', 'medium', 1),
-  ('00000000-0000-4000-8000-000000000412', 'pattern_recognition', 'Shape Patterns — Hard', 'hard', 1);
+  ('00000000-0000-4000-8000-000000000412', 'pattern_recognition', 'Shape Patterns — Hard', 'hard', 1),
+  ('00000000-0000-4000-8000-000000000413', 'visual_search', 'Find the Animal — Easy', 'easy', 1),
+  ('00000000-0000-4000-8000-000000000414', 'visual_search', 'Find the Fruit — Medium', 'medium', 1),
+  ('00000000-0000-4000-8000-000000000415', 'visual_search', 'Find the Shape — Hard', 'hard', 1),
+  ('00000000-0000-4000-8000-000000000416', 'sequence_logic', 'Order the Animals — Easy', 'easy', 1),
+  ('00000000-0000-4000-8000-000000000417', 'sequence_logic', 'Order the Fruits — Medium', 'medium', 1),
+  ('00000000-0000-4000-8000-000000000418', 'sequence_logic', 'Order the Shapes — Hard', 'hard', 1);
 
 insert into public.level_versions (level_id, version, config) values
   -- Memory Recall: longer sequences, shorter display, bigger grids as tiers rise
@@ -116,7 +127,21 @@ insert into public.level_versions (level_id, version, config) values
   ('00000000-0000-4000-8000-000000000411', 1,
    '{"category_key": "shapes", "pattern_kinds": ["ab", "abc", "aabb"], "question_count": 8, "sequence_length": 6, "option_count": 3, "time_limit_ms_per_question": 20000}'),
   ('00000000-0000-4000-8000-000000000412', 1,
-   '{"category_key": "shapes", "pattern_kinds": ["abc", "aabb", "abb", "mirror"], "question_count": 10, "sequence_length": 8, "option_count": 4, "time_limit_ms_per_question": 15000}');
+   '{"category_key": "shapes", "pattern_kinds": ["abc", "aabb", "abb", "mirror"], "question_count": 10, "sequence_length": 8, "option_count": 4, "time_limit_ms_per_question": 15000}'),
+  -- Visual Search (reserved): larger grids, more trials, target sometimes absent
+  ('00000000-0000-4000-8000-000000000413', 1,
+   '{"category_key": "animals", "trial_count": 5, "grid_size": 9, "target_present_ratio": 1, "time_limit_ms_per_trial": 20000}'),
+  ('00000000-0000-4000-8000-000000000414', 1,
+   '{"category_key": "fruits", "trial_count": 8, "grid_size": 16, "target_present_ratio": 0.9, "time_limit_ms_per_trial": 15000}'),
+  ('00000000-0000-4000-8000-000000000415', 1,
+   '{"category_key": "shapes", "trial_count": 12, "grid_size": 25, "target_present_ratio": 0.75, "time_limit_ms_per_trial": 10000}'),
+  -- Sequence Logic (reserved): longer sequences, harder kinds, tighter time
+  ('00000000-0000-4000-8000-000000000416', 1,
+   '{"category_key": "animals", "logic_kinds": ["arrange_order"], "question_count": 4, "sequence_length": 3, "time_limit_ms_per_question": 45000}'),
+  ('00000000-0000-4000-8000-000000000417', 1,
+   '{"category_key": "fruits", "logic_kinds": ["arrange_order", "next_in_series"], "question_count": 6, "sequence_length": 4, "time_limit_ms_per_question": 30000}'),
+  ('00000000-0000-4000-8000-000000000418', 1,
+   '{"category_key": "shapes", "logic_kinds": ["arrange_order", "next_in_series", "reverse_order"], "question_count": 8, "sequence_length": 6, "time_limit_ms_per_question": 20000}');
 
 -- Platform ops ---------------------------------------------------------------
 
@@ -128,6 +153,8 @@ insert into public.feature_flags (key, enabled, description) values
   ('maths_module', false, 'Mathematics Speed assessment module'),
   ('attention_module', false, 'Focus Tap (selective attention) module — ships Phase 5+'),
   ('pattern_module', false, 'Pattern Detective (fluid reasoning) module — ships Phase 5+'),
+  ('visual_search_module', false, 'Visual Search (visual attention) module — reserved, unscheduled'),
+  ('sequence_logic_module', false, 'Sequence Logic (sequential reasoning) module — reserved, unscheduled'),
   ('session_replay', false, 'Admin session replay UI'),
   ('benchmark_engine', false, 'Class/school benchmark aggregates'),
   ('adaptive_difficulty', false, 'On-device adaptive difficulty engine');
