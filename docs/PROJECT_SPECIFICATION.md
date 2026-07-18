@@ -1,6 +1,7 @@
 # CogniPlay — Project Specification
 
-**Status:** Approved design, pre-implementation
+**Status:** FROZEN — approved official specification. No further architectural
+changes unless a critical issue is discovered during implementation.
 **Date:** 2026-07-18
 **Working name:** CogniPlay (renameable until Phase 1 begins)
 
@@ -188,6 +189,16 @@ assessments, contradicting upload-at-end; roadmap item).
 - `teacher_notes` · `audit_logs` (actor/action/before/after for every admin mutation
   and every deletion) · benchmark aggregates as materialized views on a schedule.
 
+**Platform operations**
+- `app_versions` (id, version, minimum_supported_version, release_notes, released_at).
+  At teacher login the app compares itself against the latest row's
+  `minimum_supported_version`; too-old clients are blocked with an update prompt.
+  (Which version generated a given session is already recorded on the session row.)
+- `feature_flags` (key, enabled, description) — server-side kill-switch and staged
+  rollout for shipped code (e.g. `maths_module`, `session_replay`,
+  `benchmark_engine`, `adaptive_difficulty`). Fetched at login/session start.
+  Honest limit: a flag can only toggle code already present in the installed app.
+
 **Decoupled metric computation:** the upload RPC only inserts and marks the session
 `pending`. A `pg_cron` sweep runs `compute_session_metrics()` — a whole class
 finishing at once queues instead of spiking upload latency.
@@ -281,8 +292,9 @@ free product):
 
 1. Monorepo scaffold, docs committed, ADRs for the major decisions.
 2. Supabase: linked project, initial migrations (all tables incl. partitioned
-   `session_events`, full RLS, roles, token hook), seed data (1 demo school, 2 classes,
-   sample students, 2 modules, 3 categories with placeholder media, starter levels).
+   `session_events`, `app_versions`, `feature_flags`, full RLS, roles, token hook),
+   seed data (1 demo school, 2 classes, sample students, 2 modules, 3 categories with
+   placeholder media, starter levels, initial app version row, default flags).
 3. Flutter skeleton with real behavior for: teacher login, roster browse,
    teacher-confirm dialog, TimingService + event recorder + Drift store (proven by
    tests). Assessment screens stubbed.
