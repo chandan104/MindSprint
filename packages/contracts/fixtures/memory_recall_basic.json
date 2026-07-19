@@ -1,5 +1,20 @@
 {
-  "description": "Minimal valid Memory Recall session: 3-item animal sequence, one wrong tap, completed. Phase 1 uses this to prove schema validation; Phase 4 adds expected canonical metrics.",
+  "description": "Minimal valid Memory Recall session: 3-item animal sequence, one wrong tap, completed. expected_metrics_v1 values are hand-computed from the events; BOTH the Dart provisional engine and the SQL canonical engine (Phase 4) must reproduce them exactly.",
+  "expected_metrics_v1": {
+    "total_time_ms": 10650,
+    "reaction_time_ms": 6493,
+    "recall_time_ms": 1193,
+    "decision_times_ms": [1442, 855, 792],
+    "hesitation_count": 0,
+    "total_idle_time_ms": 0,
+    "longest_pause_ms": 1442,
+    "correct_count": 3,
+    "error_count": 1,
+    "accuracy": 0.75,
+    "median_decision_ms": 855,
+    "fastest_decision_ms": 792,
+    "slowest_decision_ms": 1442
+  },
   "module_key": "memory_recall",
   "level_config": {
     "category_key": "animals",

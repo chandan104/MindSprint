@@ -75,6 +75,15 @@ class SessionRecorder {
 
   int get nextSeq => _seq + 1;
 
+  /// Decodes a payload stored by [DriftEventStore] back into a map — the
+  /// encode/decode round-trip lives in this one file.
+  static Map<String, Object?> decodePayload(String payloadJson) {
+    final decoded = jsonDecode(payloadJson);
+    return decoded is Map
+        ? Map<String, Object?>.from(decoded)
+        : const <String, Object?>{};
+  }
+
   /// Records an event with the current monotonic timestamp. Synchronous and
   /// allocation-light: gameplay calls this from input handlers.
   RecordedEvent record(String eventType, [Map<String, Object?> payload = const {}]) {

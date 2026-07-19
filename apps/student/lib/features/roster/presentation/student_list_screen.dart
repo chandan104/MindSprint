@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/errors/failures.dart';
 import '../../../core/router/app_router.dart';
-import '../../session/presentation/session_stub_screen.dart';
+import '../../session/domain/session_args.dart';
 import '../domain/roster_models.dart';
 import 'confirm_student_dialog.dart';
 import 'roster_providers.dart';
@@ -20,8 +20,8 @@ class StudentListScreen extends ConsumerWidget {
     final confirmed = await showConfirmStudentDialog(context, student);
     if (confirmed && context.mounted) {
       context.push(
-        AppRoutes.session,
-        extra: SessionStubArgs(
+        AppRoutes.setup,
+        extra: ConfirmedStudent(
           studentId: student.id,
           studentName: student.fullName,
           classId: student.classId,
