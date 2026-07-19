@@ -4,10 +4,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/errors/failures.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/module_identity.dart';
 import '../../../data/remote/supabase_client_provider.dart';
 import '../../assessments/data/content_repository_impl.dart';
 import '../../assessments/domain/assessment_models.dart';
 import '../../assessments/domain/content_repository.dart';
+import '../../assessments/engine/assessment_module.dart';
 import '../../assessments/engine/module_registry.dart';
 import '../domain/session_args.dart';
 
@@ -104,20 +107,13 @@ class _AssessmentSetupScreenState extends ConsumerState<AssessmentSetupScreen> {
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 8),
                 for (final module in modules)
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.psychology_outlined, size: 32),
-                      title: Text(module.displayName,
-                          style: Theme.of(context).textTheme.titleLarge),
-                      selected: _selectedModuleKey == module.moduleKey,
-                      trailing: _selectedModuleKey == module.moduleKey
-                          ? const Icon(Icons.check_circle)
-                          : null,
-                      onTap: () => setState(() {
-                        _selectedModuleKey = module.moduleKey;
-                        _selectedLevel = null;
-                      }),
-                    ),
+                  _ModuleCard(
+                    module: module,
+                    selected: _selectedModuleKey == module.moduleKey,
+                    onTap: () => setState(() {
+                      _selectedModuleKey = module.moduleKey;
+                      _selectedLevel = null;
+                    }),
                   ),
                 if (_selectedModuleKey != null) ...[
                   const SizedBox(height: 16),
@@ -152,6 +148,90 @@ class _AssessmentSetupScreenState extends ConsumerState<AssessmentSetupScreen> {
                 ),
               ],
             ),
+    );
+  }
+}
+
+/// Game-catalogue card (prototype's "worlds"): gradient identity, emoji,
+/// tagline — the module's public face on the teacher's setup screen.
+class _ModuleCard extends StatelessWidget {
+  final AssessmentModule module;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ModuleCard({
+    required this.module,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final identity = moduleIdentity(module.moduleKey);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppTheme.radiusXl,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: selected
+                  ? identity.gradient
+                  : [AppTheme.surface, AppTheme.surface],
+            ),
+            borderRadius: AppTheme.radiusXl,
+            border: Border.all(
+              color: selected ? Colors.transparent : AppTheme.border,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: selected
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : AppTheme.surfaceHigh,
+                  borderRadius: AppTheme.radiusL,
+                ),
+                child: Center(
+                    child: Text(identity.emoji,
+                        style: const TextStyle(fontSize: 30))),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(module.displayName,
+                        style: Theme.of(context).textTheme.titleLarge),
+                    const SizedBox(height: 2),
+                    Text(
+                      selected ? identity.world : identity.tagline,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: selected
+                                ? Colors.white.withValues(alpha: 0.85)
+                                : AppTheme.textDim,
+                          ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                selected ? Icons.check_circle : Icons.chevron_right,
+                color: selected ? Colors.white : AppTheme.textDim,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -84,10 +84,9 @@ void main() {
 
   Future<void> playThroughDisplay(WidgetTester tester) async {
     await tester.tap(find.text('Start'));
-    await tester.pump(); // begin display phase
-    await tester.pump(const Duration(milliseconds: 300)); // item 1 shown
-    await tester.pump(const Duration(milliseconds: 100)); // gap
-    await tester.pump(const Duration(milliseconds: 300)); // item 2 shown
+    await tester.pump(); // begin exposure: item 1 reveals immediately
+    await tester.pump(const Duration(milliseconds: 400)); // display + gap → item 2
+    await tester.pump(const Duration(milliseconds: 300)); // last item display
     await tester.pump(); // recall phase build
   }
 
@@ -116,7 +115,82 @@ void main() {
         .map((e) => e.payload['item_id'])
         .toList();
     expect(displayed, announced);
-    expect(find.text('Tap them in the same order!'), findsOneWidget);
+    expect(find.text('TAP THEM IN THE SAME ORDER'), findsOneWidget);
+  });
+
+  testWidgets('trial_count > 1 runs multiple rounds in one session',
+      (tester) async {
+    const multiRoundLevel = AssessmentLevel(
+      levelId: 'l2',
+      levelVersionId: 'lv2',
+      version: 2,
+      moduleKey: 'memory_recall',
+      name: 'Two Rounds',
+      difficulty: 'easy',
+      config: {
+        'category_key': 'animals',
+        'sequence_length': 2,
+        'display_time_ms': 300,
+        'inter_item_gap_ms': 100,
+        'choice_grid_size': 4,
+        'trial_count': 2,
+      },
+    );
+    await tester.binding.setSurfaceSize(const Size(900, 1500));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: MemoryRecallRunner(
+          runContext: AssessmentRunContext(
+            level: multiRoundLevel,
+            items: _items,
+            recorder: recorder,
+            timing: timing,
+            onFinished: (o) => outcome = o,
+          ),
+          random: Random(7),
+        ),
+      ),
+    ));
+
+    Future<void> playRound({required String startLabel}) async {
+      await tester.tap(find.text(startLabel));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump();
+      final events = await allEvents();
+      final lastSequenceStart = events
+          .lastWhere((e) => e.eventType == 'sequence_display_started');
+      final ids = (lastSequenceStart.payload['sequence'] as List)
+          .map((e) => (e as Map)['item_id'] as String)
+          .toList();
+      for (final id in ids) {
+        await tester.tap(find.byKey(ValueKey('choice-$id')));
+        await tester.pump(const Duration(milliseconds: 150));
+      }
+    }
+
+    await playRound(startLabel: 'Start');
+    expect(outcome, isNull, reason: 'round 1 of 2 must not finish the session');
+
+    // Round-done interstitial → next ready view.
+    await tester.pump(const Duration(milliseconds: 1300));
+    expect(find.text('Round 2 — ready?'), findsOneWidget);
+
+    await playRound(startLabel: 'Go!');
+    expect(outcome, AssessmentOutcome.completed);
+
+    final events = await allEvents();
+    expect(
+      events.where((e) => e.eventType == 'sequence_display_started').length,
+      2,
+      reason: 'each round announces its own sequence',
+    );
+    expect(
+      events.where((e) => e.eventType == 'sequence_hidden').length,
+      2,
+    );
   });
 
   testWidgets('correct taps in order complete the assessment', (tester) async {

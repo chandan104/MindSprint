@@ -37,7 +37,7 @@ class MindSprintApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'MindSprint',
-      theme: AppTheme.light(),
+      theme: AppTheme.dark(),
       routerConfig: buildRouter(),
       debugShowCheckedModeBanner: false,
     );

@@ -15,7 +15,13 @@
     "sequence_length": { "type": "integer", "minimum": 2, "maximum": 12 },
     "display_time_ms": { "type": "integer", "minimum": 250, "maximum": 10000 },
     "inter_item_gap_ms": { "type": "integer", "minimum": 0, "maximum": 5000 },
-    "choice_grid_size": { "type": "integer", "minimum": 4, "maximum": 16 }
+    "choice_grid_size": { "type": "integer", "minimum": 4, "maximum": 16 },
+    "trial_count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Rounds per session (additive, default 1). Each round emits its own sequence_display_started/sequence_hidden pair into the shared session log."
+    }
   },
   "additionalProperties": false
 }

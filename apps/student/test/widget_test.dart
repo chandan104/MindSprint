@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mindsprint_student/core/router/app_router.dart';
@@ -9,7 +9,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp.router(
-          theme: AppTheme.light(),
+          theme: AppTheme.dark(),
           routerConfig: buildRouter(),
         ),
       ),
@@ -24,7 +24,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp.router(
-          theme: AppTheme.light(),
+          theme: AppTheme.dark(),
           routerConfig: buildRouter(),
         ),
       ),

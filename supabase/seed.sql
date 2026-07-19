@@ -100,13 +100,14 @@ insert into public.levels (id, module_key, name, difficulty, difficulty_rank) va
   ('00000000-0000-4000-8000-000000000418', 'sequence_logic', 'Order the Shapes — Hard', 'hard', 1);
 
 insert into public.level_versions (level_id, version, config) values
-  -- Memory Recall: longer sequences, shorter display, bigger grids as tiers rise
+  -- Memory Recall: longer sequences, shorter display, bigger grids, more
+  -- rounds as tiers rise
   ('00000000-0000-4000-8000-000000000401', 1,
-   '{"category_key": "animals", "sequence_length": 3, "display_time_ms": 2000, "inter_item_gap_ms": 500, "choice_grid_size": 4}'),
+   '{"category_key": "animals", "sequence_length": 3, "display_time_ms": 2000, "inter_item_gap_ms": 500, "choice_grid_size": 4, "trial_count": 2}'),
   ('00000000-0000-4000-8000-000000000402', 1,
-   '{"category_key": "fruits", "sequence_length": 4, "display_time_ms": 1200, "inter_item_gap_ms": 350, "choice_grid_size": 6}'),
+   '{"category_key": "fruits", "sequence_length": 4, "display_time_ms": 1200, "inter_item_gap_ms": 350, "choice_grid_size": 6, "trial_count": 3}'),
   ('00000000-0000-4000-8000-000000000403', 1,
-   '{"category_key": "shapes", "sequence_length": 6, "display_time_ms": 800, "inter_item_gap_ms": 250, "choice_grid_size": 8}'),
+   '{"category_key": "shapes", "sequence_length": 6, "display_time_ms": 800, "inter_item_gap_ms": 250, "choice_grid_size": 8, "trial_count": 3}'),
   -- Math Speed: more operations, larger operands, tighter time as tiers rise
   ('00000000-0000-4000-8000-000000000404', 1,
    '{"operations": ["add"], "question_count": 8, "operand_min": 1, "operand_max": 10, "time_limit_ms_per_question": 20000}'),
