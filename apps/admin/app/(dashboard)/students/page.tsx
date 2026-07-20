@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -73,7 +74,14 @@ export default async function StudentsPage() {
         <TableBody>
           {students.map((student) => (
             <TableRow key={student.id}>
-              <TableCell className="font-medium">{student.full_name}</TableCell>
+              <TableCell className="font-medium">
+                <Link
+                  href={`/students/${student.id}`}
+                  className="hover:underline"
+                >
+                  {student.full_name}
+                </Link>
+              </TableCell>
               <TableCell>{student.roll_number ?? "—"}</TableCell>
               <TableCell>{student.classes?.name ?? "—"}</TableCell>
               <TableCell>
