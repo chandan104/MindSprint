@@ -5,19 +5,48 @@ import 'package:go_router/go_router.dart';
 import '../../../core/errors/failures.dart';
 import '../../../core/router/app_router.dart';
 import '../../auth/presentation/auth_controller.dart';
+import '../../sync/application/sync_service.dart';
 import 'roster_providers.dart';
 
-class ClassListScreen extends ConsumerWidget {
+class ClassListScreen extends ConsumerStatefulWidget {
   const ClassListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ClassListScreen> createState() => _ClassListScreenState();
+}
+
+class _ClassListScreenState extends ConsumerState<ClassListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Opportunistic retry every time the teacher lands here — the natural
+    // between-students moment in the classroom flow.
+    Future.microtask(_retry);
+  }
+
+  Future<void> _retry() async {
+    await ref.read(syncServiceProvider).retryPending();
+    if (mounted) ref.invalidate(pendingUploadCountProvider);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final classes = ref.watch(myClassesProvider);
+    final pending = ref.watch(pendingUploadCountProvider).value ?? 0;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Classes'),
         actions: [
+          if (pending > 0)
+            IconButton(
+              tooltip: '$pending session(s) waiting to upload — tap to retry',
+              onPressed: _retry,
+              icon: Badge(
+                label: Text('$pending'),
+                child: const Icon(Icons.cloud_upload_outlined),
+              ),
+            ),
           IconButton(
             tooltip: 'Sign out',
             icon: const Icon(Icons.logout),

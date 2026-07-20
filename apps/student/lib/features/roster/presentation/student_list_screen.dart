@@ -25,6 +25,7 @@ class StudentListScreen extends ConsumerWidget {
           studentId: student.id,
           studentName: student.fullName,
           classId: student.classId,
+          schoolId: student.schoolId,
         ),
       );
     }

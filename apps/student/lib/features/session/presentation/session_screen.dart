@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/device/device_meta.dart';
 import '../../../core/di/providers.dart';
 import '../../../core/timing/timing_service.dart';
 import '../../assessments/domain/assessment_models.dart';
 import '../../assessments/engine/assessment_module.dart';
 import '../../assessments/engine/module_registry.dart';
 import '../../assessments/engine/session_recorder.dart';
+import '../../auth/presentation/auth_controller.dart';
 import '../../results/domain/provisional_metrics.dart';
 import '../../results/presentation/result_screen.dart';
+import '../../sync/application/sync_service.dart';
 import '../domain/session_args.dart';
 import 'pin_prompt.dart';
 
@@ -71,6 +74,28 @@ class _SessionScreenState extends ConsumerState<SessionScreen>
     }
   }
 
+  /// Fire-and-forget: the result screen must never wait on the network.
+  /// SyncService owns success/queue semantics.
+  void _startUpload(Map<String, Object?>? provisionalMetrics) {
+    final deviceMeta =
+        gatherDeviceMeta(context, ref.read(appVersionProvider));
+    final meta = SessionUploadMeta(
+      sessionId: _sessionId,
+      studentId: widget.args.student.studentId,
+      classId: widget.args.student.classId,
+      schoolId: widget.args.student.schoolId,
+      moduleKey: widget.args.level.moduleKey,
+      levelVersionId: widget.args.level.levelVersionId,
+      startedAt: _timing.sessionStartWallClock,
+      completedAt: DateTime.now(),
+      wasInterrupted: _wasInterrupted,
+      provisionalMetrics: provisionalMetrics,
+      deviceMeta: deviceMeta,
+    );
+    final sync = ref.read(syncServiceProvider);
+    Future(() => sync.uploadSession(meta));
+  }
+
   Future<void> _onModuleFinished(AssessmentOutcome outcome) async {
     if (_finished) return;
     _finished = true;
@@ -92,6 +117,7 @@ class _SessionScreenState extends ConsumerState<SessionScreen>
     ]);
 
     if (!mounted) return;
+    _startUpload(metrics.toJson());
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
         builder: (_) => ResultScreen(
@@ -109,7 +135,12 @@ class _SessionScreenState extends ConsumerState<SessionScreen>
     if (!unlocked || !mounted || _finished) return;
     _finished = true;
     await _recorder.recordAndFlush('session_aborted', {'reason': 'teacher_exit'});
-    if (mounted) Navigator.of(context).pop();
+    if (mounted) {
+      // Aborted sessions are data too — hesitation before a teacher exit is
+      // often the most informative signal of all.
+      _startUpload(null);
+      Navigator.of(context).pop();
+    }
   }
 
   @override

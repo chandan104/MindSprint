@@ -6,6 +6,7 @@ import 'package:mindsprint_student/features/roster/presentation/confirm_student_
 const _student = Student(
   id: 'st1',
   classId: 'c1',
+  schoolId: 'sc1',
   fullName: 'Diya Patel',
   rollNumber: '4A-02',
 );

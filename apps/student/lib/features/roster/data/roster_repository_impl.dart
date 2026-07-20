@@ -36,7 +36,7 @@ class SupabaseRosterRepository implements RosterRepository {
     try {
       final rows = await _client
           .from('students')
-          .select('id, class_id, full_name, roll_number')
+          .select('id, class_id, school_id, full_name, roll_number')
           .eq('class_id', classId)
           .eq('is_active', true)
           .order('roll_number')

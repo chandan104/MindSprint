@@ -21,12 +21,14 @@ class SchoolClass {
 class Student {
   final String id;
   final String classId;
+  final String schoolId;
   final String fullName;
   final String? rollNumber;
 
   const Student({
     required this.id,
     required this.classId,
+    required this.schoolId,
     required this.fullName,
     this.rollNumber,
   });
@@ -34,13 +36,18 @@ class Student {
   factory Student.fromJson(Map<String, dynamic> json) {
     final id = json['id'];
     final classId = json['class_id'];
+    final schoolId = json['school_id'];
     final fullName = json['full_name'];
-    if (id is! String || classId is! String || fullName is! String) {
+    if (id is! String ||
+        classId is! String ||
+        schoolId is! String ||
+        fullName is! String) {
       throw FormatException('Malformed student row: $json');
     }
     return Student(
       id: id,
       classId: classId,
+      schoolId: schoolId,
       fullName: fullName,
       rollNumber: json['roll_number'] as String?,
     );

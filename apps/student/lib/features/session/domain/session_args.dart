@@ -9,11 +9,13 @@ class ConfirmedStudent {
   final String studentId;
   final String studentName;
   final String classId;
+  final String schoolId;
 
   const ConfirmedStudent({
     required this.studentId,
     required this.studentName,
     required this.classId,
+    required this.schoolId,
   });
 }
 
