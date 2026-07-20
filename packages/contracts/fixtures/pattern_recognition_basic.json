@@ -1,0 +1,82 @@
+{
+  "module_key": "pattern_recognition",
+  "description": "Pattern completion session: 3 puzzles — one solved quickly, one solved after a long hesitation (wrong answer), one timed out. Covers reaction (first stimulus to first tap), a >3000ms hesitation gap between taps, and the timeout-as-measured-miss rule shared with math_speed. expected_metrics_v1 hand-computed under metrics/v1.",
+  "level_config": {
+    "category_key": "shapes",
+    "pattern_kinds": ["ab", "abc"],
+    "question_count": 3,
+    "sequence_length": 4,
+    "option_count": 3,
+    "time_limit_ms_per_question": 15000
+  },
+  "expected_metrics_v1": {
+    "total_time_ms": 24500,
+    "reaction_time_ms": 1800,
+    "recall_time_ms": null,
+    "decision_times_ms": [5500],
+    "hesitation_count": 1,
+    "total_idle_time_ms": 5500,
+    "longest_pause_ms": 5500,
+    "correct_count": 1,
+    "error_count": 2,
+    "accuracy": 0.3333333333333333,
+    "median_decision_ms": 5500,
+    "fastest_decision_ms": 5500,
+    "slowest_decision_ms": 5500
+  },
+  "events": [
+    { "seq": 1, "t_ms": 0, "event_type": "session_started", "payload": {} },
+    { "seq": 2, "t_ms": 800, "event_type": "question_displayed",
+      "payload": {
+        "question_text": "What comes next? (ab pattern)",
+        "expected_answer": "Circle",
+        "sequence": [
+          { "item_id": "circle", "label": "Circle" },
+          { "item_id": "square", "label": "Square" },
+          { "item_id": "circle", "label": "Circle" }
+        ],
+        "options": [
+          { "item_id": "circle", "label": "Circle" },
+          { "item_id": "star", "label": "Star" },
+          { "item_id": "square", "label": "Square" }
+        ]
+      } },
+    { "seq": 3, "t_ms": 2600, "event_type": "tap_registered",
+      "payload": { "target_kind": "choice", "item_id": "circle", "label": "Circle", "is_correct": true, "x": 180.0, "y": 620.0 } },
+    { "seq": 4, "t_ms": 3800, "event_type": "question_displayed",
+      "payload": {
+        "question_text": "What comes next? (abc pattern)",
+        "expected_answer": "Star",
+        "sequence": [
+          { "item_id": "star", "label": "Star" },
+          { "item_id": "heart", "label": "Heart" },
+          { "item_id": "moon", "label": "Moon" }
+        ],
+        "options": [
+          { "item_id": "heart", "label": "Heart" },
+          { "item_id": "star", "label": "Star" },
+          { "item_id": "moon", "label": "Moon" }
+        ]
+      } },
+    { "seq": 5, "t_ms": 8100, "event_type": "tap_registered",
+      "payload": { "target_kind": "choice", "item_id": "moon", "label": "Moon", "is_correct": false, "x": 410.0, "y": 615.0 } },
+    { "seq": 6, "t_ms": 9300, "event_type": "question_displayed",
+      "payload": {
+        "question_text": "What comes next? (ab pattern)",
+        "expected_answer": "Square",
+        "sequence": [
+          { "item_id": "square", "label": "Square" },
+          { "item_id": "heart", "label": "Heart" },
+          { "item_id": "square", "label": "Square" }
+        ],
+        "options": [
+          { "item_id": "square", "label": "Square" },
+          { "item_id": "heart", "label": "Heart" },
+          { "item_id": "circle", "label": "Circle" }
+        ]
+      } },
+    { "seq": 7, "t_ms": 24300, "event_type": "answer_submitted",
+      "payload": { "answer": "timeout", "is_correct": false } },
+    { "seq": 8, "t_ms": 24500, "event_type": "session_completed", "payload": {} }
+  ]
+}

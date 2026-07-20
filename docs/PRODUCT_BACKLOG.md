@@ -47,9 +47,9 @@ Maintained by the lead engineer; pruned when items ship or die.
 
 ## Modules
 
-- **Focus Tap gameplay** (attention_focus — schema/contracts/seeds done).
-- **Pattern Detective gameplay** (pattern_recognition — same).
-- **Visual Search & Sequence Logic** (reserved; after 3–4 validate the suite).
+- **Visual Search & Sequence Logic** (reserved; the last two of the core six).
+- **Dedicated math_speed fixture** — pattern_recognition's fixture covers the
+  shared question/tap contract, but math deserves its own canned session.
 - **Prototype candidates: Color Symphony, Spatial Builder.** Different domains
   (auditory-visual binding; visuospatial construction). Evaluate against the
   core six before adding — no near-duplicates rule.
