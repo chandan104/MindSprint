@@ -21,7 +21,16 @@ export type ReplayTap = {
 };
 
 export type ReplayState = {
-  phase: "idle" | "exposure" | "recall" | "question" | "complete" | "aborted";
+  phase:
+    | "idle"
+    | "exposure"
+    | "recall"
+    | "question"
+    | "stimulus"
+    | "complete"
+    | "aborted";
+  /** Go/no-go stream stimulus currently on screen (attention modules). */
+  currentStimulus: { label: string; isTarget: boolean } | null;
   roundNumber: number;
   /** Sequence announced for the current round (memory modules). */
   sequence: { itemId: string; label: string }[];
@@ -53,6 +62,7 @@ const initialState: ReplayState = {
   taps: [],
   matchedIds: [],
   question: null,
+  currentStimulus: null,
   isHesitating: false,
   lastEventType: null,
   abortReason: null,
@@ -92,7 +102,19 @@ export function deriveReplayState(
         state.phase = "exposure";
         break;
       case "item_displayed":
-        state.revealedCount += 1;
+        if ("is_target" in event.payload) {
+          // Go/no-go stream stimulus: its own mini answer phase.
+          state.roundNumber += 1;
+          state.currentStimulus = {
+            label: String(event.payload["label"] ?? ""),
+            isTarget: event.payload["is_target"] === true,
+          };
+          state.taps = [];
+          state.phase = "stimulus";
+          lastInputMarkMs = event.t_ms;
+        } else {
+          state.revealedCount += 1;
+        }
         break;
       case "sequence_hidden":
         state.phase = "recall";
@@ -142,7 +164,10 @@ export function deriveReplayState(
   }
 
   state.isHesitating =
-    (state.phase === "recall" || state.phase === "question") &&
+    (state.phase === "recall" ||
+      state.phase === "question" ||
+      state.phase === "stimulus") &&
+    state.taps.length === 0 &&
     tMs - lastInputMarkMs > HESITATION_MS;
 
   return state;

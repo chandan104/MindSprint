@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/presentation/auth_controller.dart';
+import '../attention_focus/focus_tap_module.dart';
 import '../math_speed/math_speed_module.dart';
 import '../memory_recall/memory_recall_module.dart';
 import 'assessment_module.dart';
@@ -21,6 +22,7 @@ const moduleFlagKeys = <String, String>{
 final _implementations = <String, AssessmentModule Function()>{
   'memory_recall': MemoryRecallModule.new,
   'math_speed': MathSpeedModule.new,
+  'attention_focus': FocusTapModule.new,
 };
 
 /// Modules that are both implemented in this build and enabled by server

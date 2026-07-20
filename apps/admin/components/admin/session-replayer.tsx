@@ -183,6 +183,42 @@ export function SessionReplayer({
             </div>
           )}
 
+        {state.currentStimulus && state.phase === "stimulus" && (
+          <div className="flex flex-col items-start gap-2">
+            <div
+              className={`rounded-xl border-4 px-8 py-6 text-lg font-bold ${
+                state.taps.length === 0
+                  ? "border-border"
+                  : state.taps[state.taps.length - 1].isCorrect
+                    ? "border-emerald-500 bg-emerald-500/10"
+                    : "border-rose-500 bg-rose-500/10"
+              }`}
+            >
+              {state.currentStimulus.label}
+            </div>
+            <div className="flex gap-2">
+              <Badge
+                variant={state.currentStimulus.isTarget ? "default" : "outline"}
+              >
+                {state.currentStimulus.isTarget ? "Target — should tap" : "Distractor — should NOT tap"}
+              </Badge>
+              {state.taps.length > 0 && (
+                <Badge
+                  variant={
+                    state.taps[state.taps.length - 1].isCorrect
+                      ? "default"
+                      : "destructive"
+                  }
+                >
+                  {state.taps[state.taps.length - 1].isCorrect
+                    ? "Hit"
+                    : "Commission error"}
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+
         {state.question && state.phase === "question" && (
           <div className="space-y-3">
             <p className="text-2xl font-bold">{state.question.text} = ?</p>

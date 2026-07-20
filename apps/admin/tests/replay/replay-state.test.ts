@@ -78,6 +78,51 @@ describe("deriveReplayState (memory recall fixture)", () => {
   });
 });
 
+describe("deriveReplayState (attention fixture)", () => {
+  const attentionFixture = JSON.parse(
+    readFileSync(
+      join(
+        __dirname,
+        "../../../../packages/contracts/fixtures/attention_focus_basic.json"
+      ),
+      "utf8"
+    )
+  ) as { events: ReplayEvent[] };
+  const attention = attentionFixture.events;
+
+  it("shows each stream stimulus with its target flag", () => {
+    const onFirst = deriveReplayState(attention, 600);
+    expect(onFirst.phase).toBe("stimulus");
+    expect(onFirst.currentStimulus).toEqual({ label: "Cat", isTarget: true });
+    expect(onFirst.taps).toHaveLength(0);
+
+    const onDistractor = deriveReplayState(attention, 2600);
+    expect(onDistractor.currentStimulus).toEqual({
+      label: "Dog",
+      isTarget: false,
+    });
+  });
+
+  it("captures the hit and the commission error", () => {
+    const afterHit = deriveReplayState(attention, 1200);
+    expect(afterHit.taps).toHaveLength(1);
+    expect(afterHit.taps[0].isCorrect).toBe(true);
+
+    const afterCommission = deriveReplayState(attention, 7100);
+    expect(afterCommission.currentStimulus?.label).toBe("Lion");
+    expect(afterCommission.taps[0].isCorrect).toBe(false);
+  });
+
+  it("resets taps per stimulus so old taps never bleed forward", () => {
+    const nextStimulus = deriveReplayState(attention, 2600);
+    expect(nextStimulus.taps).toHaveLength(0);
+  });
+
+  it("completes at the end", () => {
+    expect(deriveReplayState(attention, 12000).phase).toBe("complete");
+  });
+});
+
 describe("deriveReplayState (math-style events)", () => {
   const mathEvents: ReplayEvent[] = [
     { seq: 1, t_ms: 0, event_type: "session_started", payload: {} },

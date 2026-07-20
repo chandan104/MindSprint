@@ -6,37 +6,49 @@ import 'package:mindsprint_student/features/results/domain/provisional_metrics.d
 
 void main() {
   group('computeProvisionalMetrics', () {
-    test('reproduces the shared contract fixture exactly (drift guard)', () {
-      final fixture = jsonDecode(File(
-              '../../packages/contracts/fixtures/memory_recall_basic.json')
-          .readAsStringSync()) as Map<String, dynamic>;
+    // Every contract fixture with expected metrics is asserted automatically:
+    // adding a fixture extends the drift guard with zero test changes.
+    final fixtureFiles = Directory('../../packages/contracts/fixtures')
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.json'))
+        .toList();
 
-      final events = [
-        for (final e in fixture['events'] as List)
-          MetricEvent(
-            eventType: e['event_type'] as String,
-            tMs: e['t_ms'] as int,
-            payload: Map<String, Object?>.from(e['payload'] as Map),
-          ),
-      ];
-      final expected = fixture['expected_metrics_v1'] as Map<String, dynamic>;
+    for (final file in fixtureFiles) {
+      final fixture =
+          jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+      final expected =
+          fixture['expected_metrics_v1'] as Map<String, dynamic>?;
+      if (expected == null) continue;
 
-      final m = computeProvisionalMetrics(events);
+      test('reproduces ${file.uri.pathSegments.last} exactly (drift guard)',
+          () {
+        final events = [
+          for (final e in fixture['events'] as List)
+            MetricEvent(
+              eventType: e['event_type'] as String,
+              tMs: e['t_ms'] as int,
+              payload: Map<String, Object?>.from(e['payload'] as Map),
+            ),
+        ];
 
-      expect(m.totalTimeMs, expected['total_time_ms']);
-      expect(m.reactionTimeMs, expected['reaction_time_ms']);
-      expect(m.recallTimeMs, expected['recall_time_ms']);
-      expect(m.decisionTimesMs, expected['decision_times_ms']);
-      expect(m.hesitationCount, expected['hesitation_count']);
-      expect(m.totalIdleTimeMs, expected['total_idle_time_ms']);
-      expect(m.longestPauseMs, expected['longest_pause_ms']);
-      expect(m.correctCount, expected['correct_count']);
-      expect(m.errorCount, expected['error_count']);
-      expect(m.accuracy, expected['accuracy']);
-      expect(m.medianDecisionMs, expected['median_decision_ms']);
-      expect(m.fastestDecisionMs, expected['fastest_decision_ms']);
-      expect(m.slowestDecisionMs, expected['slowest_decision_ms']);
-    });
+        final m = computeProvisionalMetrics(events);
+
+        expect(m.totalTimeMs, expected['total_time_ms']);
+        expect(m.reactionTimeMs, expected['reaction_time_ms']);
+        expect(m.recallTimeMs, expected['recall_time_ms']);
+        expect(m.decisionTimesMs, expected['decision_times_ms']);
+        expect(m.hesitationCount, expected['hesitation_count']);
+        expect(m.totalIdleTimeMs, expected['total_idle_time_ms']);
+        expect(m.longestPauseMs, expected['longest_pause_ms']);
+        expect(m.correctCount, expected['correct_count']);
+        expect(m.errorCount, expected['error_count']);
+        expect(m.accuracy, expected['accuracy']);
+        expect(m.medianDecisionMs, expected['median_decision_ms']);
+        expect(m.fastestDecisionMs, expected['fastest_decision_ms']);
+        expect(m.slowestDecisionMs, expected['slowest_decision_ms']);
+      });
+    }
 
     test('empty event log yields zeroed metrics, no crashes', () {
       final m = computeProvisionalMetrics(const []);
