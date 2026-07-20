@@ -2,7 +2,9 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddNoteForm } from "@/components/admin/add-note-form";
+import { EraseStudentDialog } from "@/components/admin/erase-student-dialog";
 import { Sparkline } from "@/components/admin/sparkline";
+import { eraseStudent } from "@/lib/actions/erasure";
 import { addTeacherNote } from "@/lib/actions/notes";
 import {
   observeModule,
@@ -10,7 +12,7 @@ import {
   type SessionPoint,
 } from "@/lib/insights/observations";
 import {
-  currentUserIsTeacher,
+  currentUserRole,
   getStudentReport,
   type ReportSession,
 } from "@/lib/queries/student-report";
@@ -58,10 +60,12 @@ export default async function StudentReportPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [{ student, sessions, notes }, isTeacher] = await Promise.all([
+  const [{ student, sessions, notes }, role] = await Promise.all([
     getStudentReport(id),
-    currentUserIsTeacher(),
+    currentUserRole(),
   ]);
+  const isTeacher = role === "teacher";
+  const canErase = role === "school_admin" || role === "super_admin";
 
   // Trends use only trustworthy data: validated and uninterrupted.
   const trustworthy = sessions.filter(
@@ -77,13 +81,21 @@ export default async function StudentReportPage({
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold">{student.full_name}</h1>
-        <p className="text-muted-foreground text-sm">
-          {student.classes?.name ?? "No class"}
-          {student.roll_number ? ` · Roll ${student.roll_number}` : ""} ·{" "}
-          {sessions.length} session{sessions.length === 1 ? "" : "s"} recorded
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">{student.full_name}</h1>
+          <p className="text-muted-foreground text-sm">
+            {student.classes?.name ?? "No class"}
+            {student.roll_number ? ` · Roll ${student.roll_number}` : ""} ·{" "}
+            {sessions.length} session{sessions.length === 1 ? "" : "s"} recorded
+          </p>
+        </div>
+        {canErase && (
+          <EraseStudentDialog
+            studentName={student.full_name}
+            action={eraseStudent.bind(null, id)}
+          />
+        )}
       </div>
 
       {byModule.size === 0 && (

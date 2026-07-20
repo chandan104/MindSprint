@@ -72,18 +72,24 @@ export async function getStudentReport(studentId: string): Promise<{
   };
 }
 
-/** Whether the signed-in user may author teacher notes (RLS enforces it
- * server-side regardless; this only decides whether to show the form). */
-export async function currentUserIsTeacher(): Promise<boolean> {
+/** The signed-in user's platform role. UI-affordance only — RLS and the
+ * definer RPCs enforce authorization server-side regardless. */
+export async function currentUserRole(): Promise<
+  "super_admin" | "school_admin" | "teacher" | null
+> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return false;
+  if (!user) return null;
   const { data } = await supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", user.id)
     .maybeSingle();
-  return data?.role === "teacher";
+  return (data?.role as "super_admin" | "school_admin" | "teacher") ?? null;
+}
+
+export async function currentUserIsTeacher(): Promise<boolean> {
+  return (await currentUserRole()) === "teacher";
 }

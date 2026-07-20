@@ -7,6 +7,11 @@
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -260,6 +265,7 @@ export type Database = {
       levels: {
         Row: {
           created_at: string
+          difficulty: Database["public"]["Enums"]["difficulty_tier"]
           difficulty_rank: number
           enabled: boolean
           id: string
@@ -268,6 +274,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_tier"]
           difficulty_rank?: number
           enabled?: boolean
           id?: string
@@ -276,6 +283,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          difficulty?: Database["public"]["Enums"]["difficulty_tier"]
           difficulty_rank?: number
           enabled?: boolean
           id?: string
@@ -778,7 +786,15 @@ export type Database = {
     Functions: {
       auth_role: { Args: never; Returns: string }
       auth_school_id: { Args: never; Returns: string }
+      compute_session_metrics: {
+        Args: { p_session_id: string }
+        Returns: undefined
+      }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      delete_student: {
+        Args: { p_reason: string; p_student_id: string }
+        Returns: undefined
+      }
       ensure_session_event_partitions: {
         Args: { months_ahead?: number }
         Returns: undefined
@@ -786,8 +802,14 @@ export type Database = {
       is_school_admin_of: { Args: { target_school: string }; Returns: boolean }
       is_school_member: { Args: { target_school: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      process_pending_sessions: { Args: { p_limit?: number }; Returns: number }
+      upload_session: {
+        Args: { p_events: Json; p_session: Json }
+        Returns: undefined
+      }
     }
     Enums: {
+      difficulty_tier: "easy" | "medium" | "hard"
       media_type: "image" | "icon" | "audio" | "animation"
       session_status: "uploaded" | "validated" | "invalid"
       user_role: "super_admin" | "school_admin" | "teacher"
@@ -921,10 +943,10 @@ export const Constants = {
   },
   public: {
     Enums: {
+      difficulty_tier: ["easy", "medium", "hard"],
       media_type: ["image", "icon", "audio", "animation"],
       session_status: ["uploaded", "validated", "invalid"],
       user_role: ["super_admin", "school_admin", "teacher"],
     },
   },
 } as const
-
