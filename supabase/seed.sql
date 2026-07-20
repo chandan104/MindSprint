@@ -52,18 +52,24 @@ with seed_items (category_id, label, path, emoji) as (
     ('00000000-0000-4000-8000-000000000301'::uuid, 'Lion',     'seed/animals/lion.png',     '🦁'),
     ('00000000-0000-4000-8000-000000000301'::uuid, 'Rabbit',   'seed/animals/rabbit.png',   '🐰'),
     ('00000000-0000-4000-8000-000000000301'::uuid, 'Tiger',    'seed/animals/tiger.png',    '🐯'),
+    ('00000000-0000-4000-8000-000000000301'::uuid, 'Panda',    'seed/animals/panda.png',    '🐼'),
+    ('00000000-0000-4000-8000-000000000301'::uuid, 'Fox',      'seed/animals/fox.png',      '🦊'),
     ('00000000-0000-4000-8000-000000000302'::uuid, 'Apple',    'seed/fruits/apple.png',     '🍎'),
     ('00000000-0000-4000-8000-000000000302'::uuid, 'Banana',   'seed/fruits/banana.png',    '🍌'),
     ('00000000-0000-4000-8000-000000000302'::uuid, 'Grapes',   'seed/fruits/grapes.png',    '🍇'),
     ('00000000-0000-4000-8000-000000000302'::uuid, 'Mango',    'seed/fruits/mango.png',     '🥭'),
     ('00000000-0000-4000-8000-000000000302'::uuid, 'Orange',   'seed/fruits/orange.png',    '🍊'),
     ('00000000-0000-4000-8000-000000000302'::uuid, 'Papaya',   'seed/fruits/papaya.png',    '🍈'),
+    ('00000000-0000-4000-8000-000000000302'::uuid, 'Strawberry', 'seed/fruits/strawberry.png', '🍓'),
+    ('00000000-0000-4000-8000-000000000302'::uuid, 'Watermelon', 'seed/fruits/watermelon.png', '🍉'),
     ('00000000-0000-4000-8000-000000000303'::uuid, 'Circle',   'seed/shapes/circle.png',    '🔵'),
     ('00000000-0000-4000-8000-000000000303'::uuid, 'Square',   'seed/shapes/square.png',    '🟥'),
     ('00000000-0000-4000-8000-000000000303'::uuid, 'Triangle', 'seed/shapes/triangle.png',  '🔺'),
     ('00000000-0000-4000-8000-000000000303'::uuid, 'Star',     'seed/shapes/star.png',      '⭐'),
     ('00000000-0000-4000-8000-000000000303'::uuid, 'Heart',    'seed/shapes/heart.png',     '❤️'),
-    ('00000000-0000-4000-8000-000000000303'::uuid, 'Diamond',  'seed/shapes/diamond.png',   '💠')
+    ('00000000-0000-4000-8000-000000000303'::uuid, 'Diamond',  'seed/shapes/diamond.png',   '💠'),
+    ('00000000-0000-4000-8000-000000000303'::uuid, 'Moon',     'seed/shapes/moon.png',      '🌙'),
+    ('00000000-0000-4000-8000-000000000303'::uuid, 'Sun',      'seed/shapes/sun.png',       '☀️')
 ), assets as (
   insert into public.media_assets (type, storage_path, metadata)
   select 'image'::public.media_type, path, jsonb_build_object('seed', true, 'emoji', emoji)
