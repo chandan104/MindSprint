@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../core/router/app_router.dart';
 import 'auth_controller.dart';
@@ -113,6 +114,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2.5),
                           )
                         : const Text('Sign in'),
+                  ),
+                  const SizedBox(height: 24),
+                  // Build fingerprint: makes "which version am I running?"
+                  // answerable at a glance — never ambiguous again.
+                  FutureBuilder<PackageInfo>(
+                    future: PackageInfo.fromPlatform(),
+                    builder: (context, snapshot) => Text(
+                      snapshot.hasData
+                          ? 'v${snapshot.data!.version} (build ${snapshot.data!.buildNumber})'
+                          : '',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
                 ],
               ),
