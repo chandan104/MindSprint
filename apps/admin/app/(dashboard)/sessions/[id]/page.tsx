@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SessionReplayer } from "@/components/admin/session-replayer";
 import {
   Table,
   TableBody,
@@ -95,6 +96,14 @@ export default async function SessionDetailPage({
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      <div>
+        <h2 className="mb-2 text-lg font-semibold">Session replay</h2>
+        <SessionReplayer
+          events={events}
+          studentName={session.students?.full_name ?? "Student"}
+        />
       </div>
 
       <div>
