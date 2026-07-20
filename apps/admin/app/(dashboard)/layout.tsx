@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  Activity,
   Brain,
   GraduationCap,
   LayoutDashboard,
@@ -13,6 +14,7 @@ import { SignOutButton } from "./sign-out-button";
 
 const NAV = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
+  { href: "/sessions", label: "Sessions", icon: Activity },
   { href: "/schools", label: "Schools", icon: School },
   { href: "/classes", label: "Classes", icon: GraduationCap },
   { href: "/teachers", label: "Teachers", icon: UserSquare },
