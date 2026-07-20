@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/module_identity.dart';
@@ -158,6 +159,7 @@ class _MemoryRecallRunnerState extends State<MemoryRecallRunner> {
     });
 
     if (isCorrect) {
+      HapticFeedback.mediumImpact();
       setState(() {
         _matchedItemIds.add(item.id);
         _expectedIndex++;
@@ -168,6 +170,7 @@ class _MemoryRecallRunnerState extends State<MemoryRecallRunner> {
       }
     } else {
       // Gentle feedback; the child retries. Every error stays in the log.
+      HapticFeedback.heavyImpact();
       setState(() => _wrongFlashItemId = item.id);
       _flashTimer?.cancel();
       _flashTimer = Timer(const Duration(milliseconds: 450), () {

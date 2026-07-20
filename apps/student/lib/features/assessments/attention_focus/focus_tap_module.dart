@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/module_identity.dart';
@@ -151,6 +152,11 @@ class _FocusTapRunnerState extends State<FocusTapRunner> {
       'x': details.globalPosition.dx,
       'y': details.globalPosition.dy,
     });
+    if (stimulus.isTarget) {
+      HapticFeedback.mediumImpact();
+    } else {
+      HapticFeedback.heavyImpact();
+    }
     setState(() => _lastTapCorrect = stimulus.isTarget);
   }
 

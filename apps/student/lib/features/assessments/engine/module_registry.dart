@@ -4,6 +4,7 @@ import '../../auth/presentation/auth_controller.dart';
 import '../attention_focus/focus_tap_module.dart';
 import '../math_speed/math_speed_module.dart';
 import '../memory_recall/memory_recall_module.dart';
+import '../pattern_recognition/pattern_detective_module.dart';
 import 'assessment_module.dart';
 
 /// Feature-flag key per module. A module is offered to teachers only when it
@@ -23,6 +24,7 @@ final _implementations = <String, AssessmentModule Function()>{
   'memory_recall': MemoryRecallModule.new,
   'math_speed': MathSpeedModule.new,
   'attention_focus': FocusTapModule.new,
+  'pattern_recognition': PatternDetectiveModule.new,
 };
 
 /// Modules that are both implemented in this build and enabled by server
