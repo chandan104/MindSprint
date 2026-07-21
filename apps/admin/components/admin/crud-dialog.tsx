@@ -16,7 +16,7 @@ import type { ActionResult } from "@/lib/actions/schools";
 export type FieldDef = {
   name: string;
   label: string;
-  type?: "text" | "number";
+  type?: "text" | "number" | "email";
   required?: boolean;
   defaultValue?: string | number | null;
   /** Renders a native select instead of an input. */

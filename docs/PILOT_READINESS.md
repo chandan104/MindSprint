@@ -4,7 +4,7 @@ The official gate before deployment to a real school. Updated after every
 milestone. Legend: ✅ ready · 🟡 partial / needs a pass · ❌ not started ·
 ⛔ blocking for pilot.
 
-_Last updated: 2026-07-20 (integrity milestone)._
+_Last updated: 2026-07-21 (teacher invites + data erasure)._
 
 ## Student experience
 
@@ -28,7 +28,7 @@ _Last updated: 2026-07-20 (integrity milestone)._
 | Session Replay | ✅ | All four modules reconstruct |
 | Student trends + observations | ✅ | Sentence-tested, never-diagnose enforced |
 | Teacher notes | ✅ | Append-only, attributed |
-| Teacher onboarding without SQL | ❌ ⛔ | Manual dashboard+SQL today; invitation flow needed before a school runs it alone |
+| Teacher onboarding without SQL | ✅ | Admin invites by email; teacher self-signs-up and claims via `/join/[token]`; pgTAP 10 |
 
 ## Administrator experience
 
@@ -38,7 +38,7 @@ _Last updated: 2026-07-20 (integrity milestone)._
 | Overview with processing/needs-review queues | ✅ | |
 | Bulk student import (CSV) | ❌ | Backlog; painful for real class sizes without it |
 | Audit log viewer | ❌ | Data recorded since Phase 1; UI pending |
-| Data-erasure flow (DPDP) | ❌ ⛔ | Audited RPC exists; admin UI + documented process required before pilot |
+| Data-erasure flow (DPDP) | ✅ | `delete_student` definer RPC (audited, cascading) + typed-confirmation admin UI; pgTAP 09 |
 | Benchmarks / class comparisons | ❌ | Needs session volume; post-pilot-start acceptable |
 
 ## Measurement integrity
@@ -90,6 +90,6 @@ _Last updated: 2026-07-20 (integrity milestone)._
 1. Release signing + store/distribution path
 2. Name rename-gate checks
 3. Admin dashboard hosting
-4. Teacher onboarding flow (no-SQL)
-5. Data-erasure admin flow + retention doc
-6. Accessibility audit (reduced-motion, contrast, colorblind)
+4. Accessibility audit (reduced-motion, contrast, colorblind)
+
+Cleared 2026-07-21: teacher onboarding (invite flow), data erasure.

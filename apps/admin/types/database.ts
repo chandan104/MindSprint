@@ -708,6 +708,50 @@ export type Database = {
           },
         ]
       }
+      teacher_invites: {
+        Row: {
+          claimed_at: string | null
+          claimed_by: string | null
+          created_at: string
+          email: string
+          id: string
+          invited_by: string
+          school_id: string
+          status: string
+          token: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          claimed_by?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          invited_by: string
+          school_id: string
+          status?: string
+          token?: string
+        }
+        Update: {
+          claimed_at?: string | null
+          claimed_by?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          invited_by?: string
+          school_id?: string
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_invites_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teacher_notes: {
         Row: {
           body: string
@@ -786,6 +830,7 @@ export type Database = {
     Functions: {
       auth_role: { Args: never; Returns: string }
       auth_school_id: { Args: never; Returns: string }
+      claim_teacher_invite: { Args: { p_token: string }; Returns: undefined }
       compute_session_metrics: {
         Args: { p_session_id: string }
         Returns: undefined

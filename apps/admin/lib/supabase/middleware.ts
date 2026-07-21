@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PATHS = ["/login", "/join"];
 
 export function isProtectedPath(pathname: string): boolean {
   return !PUBLIC_PATHS.some(

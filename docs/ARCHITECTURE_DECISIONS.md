@@ -142,6 +142,32 @@ without modifying the engine, recorder, sync, or any existing test. Honest limit
 a compiled app, a new module still requires an app update — the contract eliminates
 touching tested code, not shipping releases.
 
+## ADR-012: APK build identity (versioned filenames + on-screen fingerprint)
+
+**Context:** A demo APK appeared unchanged after an update; investigation
+showed the file was correct but every build shared one filename
+(`MindSprint-debug.apk`) and one internal version — nothing distinguished
+old from new, and a stale copy in phone Downloads was indistinguishable
+from a fresh transfer.
+
+**Decision:** Every release bumps `pubspec.yaml`. The login screen renders
+`vX.Y.Z (build N)`. Desktop APK output is copied to a versioned filename.
+
+**Why:** Cheap, structural fix — build identity becomes verifiable at a
+glance instead of trusted on faith.
+
+## ADR-013: Teacher self-onboarding via invite, not shared credentials
+
+**Decision:** `teacher_invites` (school-scoped, single-use, email-locked)
++ `claim_teacher_invite` SECURITY DEFINER RPC. Admin issues a link; the
+teacher signs up with their own email/password and claims it, which is
+the only way a fresh account (no role yet) can pass RLS to get one.
+
+**Why:** Removes the manual dashboard+SQL onboarding step (a pilot
+blocker) without weakening the teacher-supervised, no-shared-credentials
+model. The RPC checks the claiming account's email matches the invite,
+so a link cannot be reused by someone else.
+
 ## ADR-011: Single `user_roles` table for all permission checks
 
 **Decision:** One `user_roles` table (user, role, school scope) is the sole source
