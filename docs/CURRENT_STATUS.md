@@ -4,8 +4,10 @@ _Source of truth for "what exists right now." Updated every milestone.
 Details live in PILOT_READINESS.md (gate checklist), PRODUCT_BACKLOG.md
 (deferred ideas), ARCHITECTURE_DECISIONS.md (the why)._
 
-**Last updated:** 2026-07-21 · **Branch:** `phase-1-foundation` · **Repo:**
-github.com/chandan104/MindSprint · **Hosted project:** ddiqmwyavbvmqgbndwpa
+**Last updated:** 2026-07-21 · **Branch:** `phase-1-foundation` (merged to
+`master` after every milestone; `master` is what deploys) · **Repo:**
+github.com/chandan104/MindSprint · **Hosted DB:** ddiqmwyavbvmqgbndwpa ·
+**Admin:** https://mind-sprint-opal.vercel.app (Vercel, deploys from `master`)
 
 ## Shipped
 

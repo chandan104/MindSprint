@@ -4,7 +4,7 @@ The official gate before deployment to a real school. Updated after every
 milestone. Legend: ✅ ready · 🟡 partial / needs a pass · ❌ not started ·
 ⛔ blocking for pilot.
 
-_Last updated: 2026-07-21 (teacher invites + data erasure)._
+_Last updated: 2026-07-21 (admin deployed to production)._
 
 ## Student experience
 
@@ -69,7 +69,7 @@ _Last updated: 2026-07-21 (teacher invites + data erasure)._
 | Hosted Supabase migrations in sync | ✅ | 16 migrations |
 | Release-signed APK + Play Store listing | 🟡 ⛔ | `build.gradle.kts` reads `android/key.properties` (gitignored) with release minify+shrink; falls back to debug signing when absent. **Owner action needed:** generate the production keystore (`key.properties.example` has the command) and store it securely — cannot be automated |
 | Name/trademark/Play availability check (rename gate) | ❌ ⛔ | "MindSprint" + com.mindsprint.app still placeholders |
-| Admin dashboard hosting (currently local dev only) | 🟡 ⛔ | App-side readiness done: `error.tsx`/`not-found.tsx` boundaries, `/api/health` check, build-info footer. **Owner action needed:** create the hosting account (Vercel or similar) and connect the repo |
+| Admin dashboard hosting | ✅ | Live on Vercel at `mind-sprint-opal.vercel.app`, deploying from `master`. Fixed two real deployment bugs: (1) Edge Function couldn't resolve a `@/` path alias in `middleware.ts` in this monorepo — switched to a relative import and renamed to `proxy.ts` per the Next.js 16 convention; (2) the Vercel project's stored Framework Preset was `null` despite the dashboard displaying "Next.js" as detected, so every deployment silently used a static builder and 404'd on every route — fixed via a direct API patch (`framework: "nextjs"`), confirmed with a redeploy that now returns real content |
 | Windows/macOS desktop builds | ❌ | Not pilot-blocking (Android-first) |
 | Local Docker (dev loop) | 🟡 | Broken on this machine; CI covers DB testing |
 | Crash reporting | ❌ | Evaluate privacy-compatible option |
@@ -89,12 +89,12 @@ _Last updated: 2026-07-21 (teacher invites + data erasure)._
 
 1. **Release signing** — mechanism ready; owner must generate + custody the keystore
 2. **Name rename-gate checks** — owner decision (Play availability, domain, trademark)
-3. **Admin dashboard hosting** — app-ready; owner must create the hosting account
-4. Accessibility audit — cleared (see below)
 
-Cleared 2026-07-21: teacher onboarding, data erasure, accessibility audit.
-All remaining blockers require an account/business decision only the
-product owner can make — no more code-only blockers exist.
+Cleared 2026-07-21: teacher onboarding, data erasure, accessibility audit,
+admin dashboard hosting. Only two blockers remain, and both require a
+business decision only the product owner can make (a keystore to
+generate and custody, and a name to clear) — every code-level blocker
+is closed.
 
 ## Accessibility audit detail (2026-07-21)
 
