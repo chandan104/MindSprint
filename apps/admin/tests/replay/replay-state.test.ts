@@ -123,6 +123,40 @@ describe("deriveReplayState (attention fixture)", () => {
   });
 });
 
+describe("deriveReplayState (visual_search fixture)", () => {
+  const vsFixture = JSON.parse(
+    readFileSync(
+      join(
+        __dirname,
+        "../../../../packages/contracts/fixtures/visual_search_basic.json"
+      ),
+      "utf8"
+    )
+  ) as { events: ReplayEvent[] };
+  const vs = vsFixture.events;
+
+  it("reconstructs a target-present trial as a question phase", () => {
+    const state = deriveReplayState(vs, 500);
+    expect(state.phase).toBe("question");
+    expect(state.question?.expectedAnswer).toBe("Cat");
+    expect(state.question?.options).toHaveLength(7);
+  });
+
+  it("captures the correct find and the correct not-here tap", () => {
+    const afterFind = deriveReplayState(vs, 900);
+    expect(afterFind.taps).toHaveLength(1);
+    expect(afterFind.taps[0].isCorrect).toBe(true);
+
+    const secondTrial = deriveReplayState(vs, 1400);
+    expect(secondTrial.question?.expectedAnswer).toBe("not_present");
+    expect(secondTrial.taps).toHaveLength(0);
+  });
+
+  it("completes at the end", () => {
+    expect(deriveReplayState(vs, 23200).phase).toBe("complete");
+  });
+});
+
 describe("deriveReplayState (math-style events)", () => {
   const mathEvents: ReplayEvent[] = [
     { seq: 1, t_ms: 0, event_type: "session_started", payload: {} },

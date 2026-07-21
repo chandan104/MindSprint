@@ -1,0 +1,78 @@
+{
+  "module_key": "visual_search",
+  "description": "Grid search session: 3 trials — target present (quick correct find), target absent (correct 'not here' after a long hesitation), and a timeout. Reuses the question_displayed/tap_registered/answer_submitted contract (no engine changes needed): options include grid items plus a 'not_present' sentinel; expected_answer is the target's label or 'not_present'.",
+  "level_config": {
+    "category_key": "animals",
+    "trial_count": 3,
+    "grid_size": 6,
+    "target_present_ratio": 0.75,
+    "time_limit_ms_per_trial": 15000
+  },
+  "expected_metrics_v1": {
+    "total_time_ms": 23200,
+    "reaction_time_ms": 550,
+    "recall_time_ms": null,
+    "decision_times_ms": [6650],
+    "hesitation_count": 1,
+    "total_idle_time_ms": 6650,
+    "longest_pause_ms": 6650,
+    "correct_count": 2,
+    "error_count": 1,
+    "accuracy": 0.6666666666666666,
+    "median_decision_ms": 6650,
+    "fastest_decision_ms": 6650,
+    "slowest_decision_ms": 6650
+  },
+  "events": [
+    { "seq": 1, "t_ms": 0, "event_type": "session_started", "payload": {} },
+    { "seq": 2, "t_ms": 300, "event_type": "question_displayed",
+      "payload": {
+        "question_text": "Find the Cat!",
+        "expected_answer": "Cat",
+        "options": [
+          { "item_id": "cat", "label": "Cat" },
+          { "item_id": "dog", "label": "Dog" },
+          { "item_id": "lion", "label": "Lion" },
+          { "item_id": "tiger", "label": "Tiger" },
+          { "item_id": "panda", "label": "Panda" },
+          { "item_id": "fox", "label": "Fox" },
+          { "item_id": "not_present", "label": "Not here!" }
+        ]
+      } },
+    { "seq": 3, "t_ms": 850, "event_type": "tap_registered",
+      "payload": { "target_kind": "choice", "item_id": "cat", "label": "Cat", "is_correct": true, "x": 140.0, "y": 300.0 } },
+    { "seq": 4, "t_ms": 1350, "event_type": "question_displayed",
+      "payload": {
+        "question_text": "Find the Cat!",
+        "expected_answer": "not_present",
+        "options": [
+          { "item_id": "dog", "label": "Dog" },
+          { "item_id": "lion", "label": "Lion" },
+          { "item_id": "tiger", "label": "Tiger" },
+          { "item_id": "panda", "label": "Panda" },
+          { "item_id": "fox", "label": "Fox" },
+          { "item_id": "rabbit", "label": "Rabbit" },
+          { "item_id": "not_present", "label": "Not here!" }
+        ]
+      } },
+    { "seq": 5, "t_ms": 7500, "event_type": "tap_registered",
+      "payload": { "target_kind": "choice", "item_id": "not_present", "label": "Not here!", "is_correct": true, "x": 400.0, "y": 900.0 } },
+    { "seq": 6, "t_ms": 8000, "event_type": "question_displayed",
+      "payload": {
+        "question_text": "Find the Star!",
+        "expected_answer": "Star",
+        "options": [
+          { "item_id": "star", "label": "Star" },
+          { "item_id": "circle", "label": "Circle" },
+          { "item_id": "square", "label": "Square" },
+          { "item_id": "triangle", "label": "Triangle" },
+          { "item_id": "heart", "label": "Heart" },
+          { "item_id": "moon", "label": "Moon" },
+          { "item_id": "not_present", "label": "Not here!" }
+        ]
+      } },
+    { "seq": 7, "t_ms": 23000, "event_type": "answer_submitted",
+      "payload": { "answer": "timeout", "is_correct": false } },
+    { "seq": 8, "t_ms": 23200, "event_type": "session_completed", "payload": {} }
+  ]
+}
