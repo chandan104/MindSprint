@@ -21,9 +21,10 @@ Maintained by the lead engineer; pruned when items ship or die.
 - **Companion characters.** The prototype's module companions (Kora, Zephyr…)
   are charming; a light version could introduce each module's world. Pure
   presentation; no data impact.
-- **Reduced-motion & colorblind accessibility pass.** Respect system
-  reduced-motion; verify module palettes for deuteranopia; label shapes by
-  name not only color. Trigger: before first school pilot.
+- **Physical screen-reader pass on admin** (TalkBack/NVDA/VoiceOver) — the
+  2026-07-21 audit verified semantic structure exists (shadcn/Radix
+  defaults) but wasn't manually tested with an actual reader. Trigger:
+  before first school pilot.
 
 ## Teacher intelligence
 

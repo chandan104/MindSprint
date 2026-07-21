@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/accessibility/motion.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/module_identity.dart';
 import '../../../core/widgets/countdown_bar.dart';
@@ -353,6 +354,7 @@ class _ExposureView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final reduceMotion = reducedMotion(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -378,7 +380,9 @@ class _ExposureView extends StatelessWidget {
                 for (var i = 0; i < sequence.length; i++)
                   AnimatedScale(
                     scale: i < revealedCount ? 1 : 0,
-                    duration: const Duration(milliseconds: 250),
+                    duration: reduceMotion
+                        ? Duration.zero
+                        : const Duration(milliseconds: 250),
                     curve: Curves.easeOutBack,
                     child: Container(
                       width: 84,
@@ -560,8 +564,12 @@ class _ChoiceTile extends StatelessWidget {
                 Text(item.label,
                     style: Theme.of(context).textTheme.titleMedium,
                     overflow: TextOverflow.ellipsis),
+                // Icon accompanies color on every state (colorblind-safe):
+                // never rely on red/green alone.
                 if (matched)
-                  Icon(Icons.check_circle, color: scheme.primary, size: 20),
+                  Icon(Icons.check_circle, color: scheme.primary, size: 20)
+                else if (wrongFlash)
+                  Icon(Icons.cancel, color: scheme.error, size: 20),
               ],
             ),
           ),

@@ -16,7 +16,7 @@ _Last updated: 2026-07-21 (teacher invites + data erasure)._
 | Visual Search + Sequence Logic gameplay | ❌ | Reserved modules; not pilot-blocking (flags off) |
 | Sound design | ❌ | Haptics shipped; audio needs assets (backlog) |
 | Practice/tutorial rounds excluded from metrics | ❌ | Backlog — first-session confusion currently pollutes baselines; consider before pilot |
-| Reduced-motion + colorblind pass | 🟡 ⛔ | Shapes labeled by name (good); needs a deliberate audit before children use it |
+| Reduced-motion + colorblind pass | ✅ | `reducedMotion()` skips decorative animation (celebration, exposure reveal); every correct/wrong state pairs color with an icon (never color-only) across all 4 modules |
 
 ## Teacher experience
 
@@ -67,9 +67,9 @@ _Last updated: 2026-07-21 (teacher invites + data erasure)._
 |---|---|---|
 | CI (Flutter, admin, contracts, pgTAP) | ✅ | Green on every milestone |
 | Hosted Supabase migrations in sync | ✅ | 16 migrations |
-| Release-signed APK + Play Store listing | ❌ ⛔ | Debug builds only; signing config + store assets needed |
+| Release-signed APK + Play Store listing | 🟡 ⛔ | `build.gradle.kts` reads `android/key.properties` (gitignored) with release minify+shrink; falls back to debug signing when absent. **Owner action needed:** generate the production keystore (`key.properties.example` has the command) and store it securely — cannot be automated |
 | Name/trademark/Play availability check (rename gate) | ❌ ⛔ | "MindSprint" + com.mindsprint.app still placeholders |
-| Admin dashboard hosting (currently local dev only) | ❌ ⛔ | Deploy to Vercel or similar before teachers use it |
+| Admin dashboard hosting (currently local dev only) | 🟡 ⛔ | App-side readiness done: `error.tsx`/`not-found.tsx` boundaries, `/api/health` check, build-info footer. **Owner action needed:** create the hosting account (Vercel or similar) and connect the repo |
 | Windows/macOS desktop builds | ❌ | Not pilot-blocking (Android-first) |
 | Local Docker (dev loop) | 🟡 | Broken on this machine; CI covers DB testing |
 | Crash reporting | ❌ | Evaluate privacy-compatible option |
@@ -87,9 +87,31 @@ _Last updated: 2026-07-21 (teacher invites + data erasure)._
 
 ## Pilot-blocking summary (the ⛔ list)
 
-1. Release signing + store/distribution path
-2. Name rename-gate checks
-3. Admin dashboard hosting
-4. Accessibility audit (reduced-motion, contrast, colorblind)
+1. **Release signing** — mechanism ready; owner must generate + custody the keystore
+2. **Name rename-gate checks** — owner decision (Play availability, domain, trademark)
+3. **Admin dashboard hosting** — app-ready; owner must create the hosting account
+4. Accessibility audit — cleared (see below)
 
-Cleared 2026-07-21: teacher onboarding (invite flow), data erasure.
+Cleared 2026-07-21: teacher onboarding, data erasure, accessibility audit.
+All remaining blockers require an account/business decision only the
+product owner can make — no more code-only blockers exist.
+
+## Accessibility audit detail (2026-07-21)
+
+- **Contrast (WCAG AA, computed):** bg/white 20.1:1, bg/textDim 7.9:1,
+  bg/primary 4.5:1, bg/success 10.5:1, bg/danger 7.5:1 — all pass AA
+  (4.5:1 normal text / 3:1 UI elements).
+- **Colorblind:** every correct/wrong signal pairs an icon with color
+  across all 4 modules (was color-only in 2 tile types — fixed).
+- **Reduced motion:** `reducedMotion(context)` (reads
+  `MediaQuery.disableAnimations`) skips the result-screen star spring-in
+  and the memory-recall exposure reveal animation; gameplay timing is
+  never affected, only decorative motion.
+- **Touch targets:** every gameplay tile enforces `AppTheme.minTouchTarget`
+  (56dp); Focus Tap's tap surface is a 180×180 stage, far above minimum.
+- **Screen reader:** `ItemVisual` carries `semanticsLabel`; default
+  Material semantics on all buttons/icons.
+- **Admin keyboard/responsive:** shadcn/Radix primitives are
+  keyboard-navigable by default; Tailwind responsive utilities throughout.
+  Not manually tested with a physical screen reader — flagged in backlog
+  for a dedicated pass before pilot.

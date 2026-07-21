@@ -10,6 +10,7 @@ import {
   UserSquare,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import packageJson from "../../package.json";
 import { SignOutButton } from "./sign-out-button";
 
 const NAV = [
@@ -56,6 +57,12 @@ export default async function DashboardLayout({
             {user.email}
           </p>
           <SignOutButton />
+          <p className="text-muted-foreground/60 mt-3 font-mono text-[10px]">
+            v{packageJson.version}
+            {process.env.VERCEL_GIT_COMMIT_SHA
+              ? ` · ${process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7)}`
+              : ""}
+          </p>
         </div>
       </aside>
       <main className="flex-1 overflow-x-auto p-8">{children}</main>

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/accessibility/motion.dart';
+
 import '../../../core/router/app_router.dart';
 import '../../assessments/domain/assessment_models.dart';
 import '../../session/domain/session_args.dart';
@@ -133,11 +135,24 @@ class _CelebrationStarsState extends State<_CelebrationStars>
   );
   int _hapticsFired = 0;
 
+  bool _started = false;
+
   @override
   void initState() {
     super.initState();
     _controller.addListener(_maybeTick);
-    _controller.forward();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    if (reducedMotion(context)) {
+      _controller.value = 1; // jump to final state, skip the spring-in
+    } else {
+      _controller.forward();
+    }
   }
 
   void _maybeTick() {

@@ -1,0 +1,6 @@
+# Copy to android/key.properties (gitignored) once a release keystore exists.
+# Generate with: keytool -genkey -v -keystore mindsprint-release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias mindsprint
+storePassword=CHANGE_ME
+keyPassword=CHANGE_ME
+keyAlias=mindsprint
+storeFile=/absolute/path/to/mindsprint-release.jks

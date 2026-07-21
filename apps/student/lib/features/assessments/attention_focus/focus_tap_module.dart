@@ -342,7 +342,23 @@ class _StimulusView extends StatelessWidget {
                 borderRadius: AppTheme.radiusXl,
                 border: Border.all(color: border, width: 4),
               ),
-              child: Center(child: ItemVisual(item: stimulus.item, size: 96)),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  ItemVisual(item: stimulus.item, size: 96),
+                  // Icon accompanies color (colorblind-safe signal).
+                  if (tapCorrect != null)
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Icon(
+                        tapCorrect! ? Icons.check_circle : Icons.cancel,
+                        color: tapCorrect! ? AppTheme.success : scheme.error,
+                        size: 28,
+                      ),
+                    ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
             CountdownBar(
