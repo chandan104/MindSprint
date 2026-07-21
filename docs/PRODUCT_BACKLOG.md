@@ -48,8 +48,8 @@ Maintained by the lead engineer; pruned when items ship or die.
 
 ## Modules
 
-- **Visual Search & Sequence Logic** (reserved; the last two of the core six).
-- **Dedicated math_speed fixture** — pattern_recognition's fixture covers the
+- **Sequence Logic** (reserved; the last of the core six).
+- **Dedicated math_speed fixture** — pattern/visual_search fixtures cover the
   shared question/tap contract, but math deserves its own canned session.
 - **Prototype candidates: Color Symphony, Spatial Builder.** Different domains
   (auditory-visual binding; visuospatial construction). Evaluate against the
