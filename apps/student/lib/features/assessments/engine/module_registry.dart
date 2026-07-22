@@ -5,6 +5,7 @@ import '../attention_focus/focus_tap_module.dart';
 import '../math_speed/math_speed_module.dart';
 import '../memory_recall/memory_recall_module.dart';
 import '../pattern_recognition/pattern_detective_module.dart';
+import '../sequence_logic/sequence_logic_module.dart';
 import '../visual_search/visual_search_module.dart';
 import 'assessment_module.dart';
 
@@ -27,6 +28,7 @@ final _implementations = <String, AssessmentModule Function()>{
   'attention_focus': FocusTapModule.new,
   'pattern_recognition': PatternDetectiveModule.new,
   'visual_search': VisualSearchModule.new,
+  'sequence_logic': SequenceLogicModule.new,
 };
 
 /// Modules that are both implemented in this build and enabled by server

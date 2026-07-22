@@ -157,6 +157,40 @@ describe("deriveReplayState (visual_search fixture)", () => {
   });
 });
 
+describe("deriveReplayState (sequence_logic fixture)", () => {
+  const slFixture = JSON.parse(
+    readFileSync(
+      join(
+        __dirname,
+        "../../../../packages/contracts/fixtures/sequence_logic_basic.json"
+      ),
+      "utf8"
+    )
+  ) as { events: ReplayEvent[] };
+  const sl = slFixture.events;
+
+  it("reconstructs a next-in-series question with its shown run", () => {
+    const state = deriveReplayState(sl, 500);
+    expect(state.phase).toBe("question");
+    expect(state.question?.expectedAnswer).toBe("8");
+    expect(state.question?.options).toHaveLength(3);
+  });
+
+  it("captures the correct answer then resets for the next question", () => {
+    const afterCorrect = deriveReplayState(sl, 2100);
+    expect(afterCorrect.taps).toHaveLength(1);
+    expect(afterCorrect.taps[0].isCorrect).toBe(true);
+
+    const secondQuestion = deriveReplayState(sl, 3100);
+    expect(secondQuestion.question?.expectedAnswer).toBe("20");
+    expect(secondQuestion.taps).toHaveLength(0);
+  });
+
+  it("completes at the end", () => {
+    expect(deriveReplayState(sl, 21200).phase).toBe("complete");
+  });
+});
+
 describe("deriveReplayState (math-style events)", () => {
   const mathEvents: ReplayEvent[] = [
     { seq: 1, t_ms: 0, event_type: "session_started", payload: {} },

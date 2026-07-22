@@ -48,9 +48,14 @@ Maintained by the lead engineer; pruned when items ship or die.
 
 ## Modules
 
-- **Sequence Logic** (reserved; the last of the core six).
-- **Dedicated math_speed fixture** — pattern/visual_search fixtures cover the
-  shared question/tap contract, but math deserves its own canned session.
+- **Core six complete** (Memory, Math, Focus, Pattern, Visual Search,
+  Sequence Logic all shipped 2026-07-21). Further modules only on pilot
+  evidence of a measurement gap.
+- **Dedicated math_speed fixture** — pattern/visual_search/sequence_logic
+  fixtures cover the shared question/tap contract, but math deserves its own
+  canned session.
+- **arrange_order / reverse_order Sequence Logic gameplay** — the generator
+  and config support them; only next_in_series has UI so far.
 - **Prototype candidates: Color Symphony, Spatial Builder.** Different domains
   (auditory-visual binding; visuospatial construction). Evaluate against the
   core six before adding — no near-duplicates rule.

@@ -10,10 +10,10 @@ _Last updated: 2026-07-21 (admin deployed to production)._
 
 | Item | Status | Notes |
 |---|---|---|
-| Five playable modules (Memory, Math, Focus, Pattern, Visual Search) | ✅ | Each with world identity, tutorial card, difficulty tiers, feedback, haptics |
+| All six core modules playable (Memory, Math, Focus, Pattern, Visual Search, Sequence Logic) | ✅ | Each with world identity, tutorial card, difficulty tiers, feedback, haptics |
 | Result celebration + educational language | ✅ | Star spring-in, effort-focused copy, interruption honesty |
 | Kiosk mode (back-trap + teacher PIN) | ✅ | Device-validated |
-| Sequence Logic gameplay | ❌ | Last reserved module; not pilot-blocking (flag off) |
+| — | ✅ | The core six are all shipped and fixture-guarded |
 | Sound design | ❌ | Haptics shipped; audio needs assets (backlog) |
 | Practice/tutorial rounds excluded from metrics | ❌ | Backlog — first-session confusion currently pollutes baselines; consider before pilot |
 | Reduced-motion + colorblind pass | ✅ | `reducedMotion()` skips decorative animation (celebration, exposure reveal); every correct/wrong state pairs color with an icon (never color-only) across all 4 modules |
@@ -25,7 +25,7 @@ _Last updated: 2026-07-21 (admin deployed to production)._
 | Login, roster, student confirm, assessment setup | ✅ | Device-validated |
 | Instant provisional results | ✅ | |
 | Session list/detail + canonical metrics | ✅ | |
-| Session Replay | ✅ | All five modules reconstruct |
+| Session Replay | ✅ | All six modules reconstruct |
 | Student trends + observations | ✅ | Sentence-tested, never-diagnose enforced |
 | Teacher notes | ✅ | Append-only, attributed |
 | Teacher onboarding without SQL | ✅ | Admin invites by email; teacher self-signs-up and claims via `/join/[token]`; pgTAP 10 |

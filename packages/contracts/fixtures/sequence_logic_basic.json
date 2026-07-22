@@ -1,0 +1,81 @@
+{
+  "module_key": "sequence_logic",
+  "description": "Next-in-series session: 3 questions — a quick correct answer, a wrong answer after a long hesitation, and a timeout. Reuses the question_displayed/tap_registered/answer_submitted contract (sequence = the ordered items shown, options = candidate next items, expected_answer = the correct next item's label). Number series are generated content, so options carry numeric labels. expected_metrics_v1 hand-computed under metrics/v1.",
+  "level_config": {
+    "category_key": "numbers",
+    "logic_kinds": ["next_in_series"],
+    "question_count": 3,
+    "sequence_length": 4,
+    "time_limit_ms_per_question": 15000
+  },
+  "expected_metrics_v1": {
+    "total_time_ms": 21200,
+    "reaction_time_ms": 1700,
+    "recall_time_ms": null,
+    "decision_times_ms": [6100],
+    "hesitation_count": 1,
+    "total_idle_time_ms": 6100,
+    "longest_pause_ms": 6100,
+    "correct_count": 1,
+    "error_count": 2,
+    "accuracy": 0.3333333333333333,
+    "median_decision_ms": 6100,
+    "fastest_decision_ms": 6100,
+    "slowest_decision_ms": 6100
+  },
+  "events": [
+    { "seq": 1, "t_ms": 0, "event_type": "session_started", "payload": {} },
+    { "seq": 2, "t_ms": 400, "event_type": "question_displayed",
+      "payload": {
+        "question_text": "What comes next? (next_in_series)",
+        "expected_answer": "8",
+        "sequence": [
+          { "item_id": "n2", "label": "2" },
+          { "item_id": "n4", "label": "4" },
+          { "item_id": "n6", "label": "6" }
+        ],
+        "options": [
+          { "item_id": "n7", "label": "7" },
+          { "item_id": "n8", "label": "8" },
+          { "item_id": "n9", "label": "9" }
+        ]
+      } },
+    { "seq": 3, "t_ms": 2100, "event_type": "tap_registered",
+      "payload": { "target_kind": "choice", "item_id": "n8", "label": "8", "is_correct": true, "x": 210.0, "y": 640.0 } },
+    { "seq": 4, "t_ms": 3000, "event_type": "question_displayed",
+      "payload": {
+        "question_text": "What comes next? (next_in_series)",
+        "expected_answer": "20",
+        "sequence": [
+          { "item_id": "n5", "label": "5" },
+          { "item_id": "n10", "label": "10" },
+          { "item_id": "n15", "label": "15" }
+        ],
+        "options": [
+          { "item_id": "n18", "label": "18" },
+          { "item_id": "n20", "label": "20" },
+          { "item_id": "n25", "label": "25" }
+        ]
+      } },
+    { "seq": 5, "t_ms": 8200, "event_type": "tap_registered",
+      "payload": { "target_kind": "choice", "item_id": "n25", "label": "25", "is_correct": false, "x": 410.0, "y": 638.0 } },
+    { "seq": 6, "t_ms": 9000, "event_type": "question_displayed",
+      "payload": {
+        "question_text": "What comes next? (next_in_series)",
+        "expected_answer": "12",
+        "sequence": [
+          { "item_id": "n3", "label": "3" },
+          { "item_id": "n6b", "label": "6" },
+          { "item_id": "n9b", "label": "9" }
+        ],
+        "options": [
+          { "item_id": "n11", "label": "11" },
+          { "item_id": "n12", "label": "12" },
+          { "item_id": "n13", "label": "13" }
+        ]
+      } },
+    { "seq": 7, "t_ms": 21000, "event_type": "answer_submitted",
+      "payload": { "answer": "timeout", "is_correct": false } },
+    { "seq": 8, "t_ms": 21200, "event_type": "session_completed", "payload": {} }
+  ]
+}
