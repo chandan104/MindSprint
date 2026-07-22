@@ -59,6 +59,55 @@ export async function updateStudent(id: string, formData: FormData): Promise<Act
   return { ok: true };
 }
 
+export type BulkImportRow = {
+  full_name: string;
+  roll_number: string | null;
+  birth_year: number | null;
+};
+
+export type BulkImportResult =
+  | { ok: true; inserted: number }
+  | { ok: false; error: string };
+
+/** Inserts validated rows into one class in a single request. RLS enforces
+ * school scope; the audit trigger records each insert. Re-validated
+ * server-side (never trust the client's parse). */
+export async function bulkImportStudents(
+  classId: string,
+  rows: BulkImportRow[]
+): Promise<BulkImportResult> {
+  if (rows.length === 0) return { ok: false, error: "Nothing to import." };
+  if (rows.length > 500) {
+    return { ok: false, error: "Import up to 500 students at a time." };
+  }
+
+  const clean: BulkImportRow[] = [];
+  for (const row of rows) {
+    const parsed = studentSchema
+      .pick({ full_name: true, roll_number: true, birth_year: true })
+      .safeParse(row);
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: `Invalid row (${row.full_name || "unnamed"}): ${parsed.error.issues[0].message}`,
+      };
+    }
+    clean.push(parsed.data);
+  }
+
+  const schoolId = await schoolIdForClass(classId);
+  if (!schoolId) return { ok: false, error: "Class not found" };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("students")
+    .insert(clean.map((r) => ({ ...r, class_id: classId, school_id: schoolId })));
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/students");
+  return { ok: true, inserted: clean.length };
+}
+
 export async function deactivateStudent(id: string): Promise<ActionResult> {
   // Soft-delete: assessment history must survive roster changes. Hard
   // deletion (the DPDP erasure path) is an audited RPC in a later phase.

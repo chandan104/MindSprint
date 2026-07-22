@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
 import { CrudDialog, type FieldDef } from "@/components/admin/crud-dialog";
+import { ImportStudentsDialog } from "@/components/admin/import-students-dialog";
 import { listClasses } from "@/lib/queries/classes";
 import { listStudents } from "@/lib/queries/students";
 import {
@@ -54,12 +55,15 @@ export default async function StudentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Students</h1>
-        <CrudDialog
-          title="Add student"
-          trigger={<Button>Add student</Button>}
-          fields={fields()}
-          action={createStudent}
-        />
+        <div className="flex gap-2">
+          <ImportStudentsDialog classes={classOptions} />
+          <CrudDialog
+            title="Add student"
+            trigger={<Button>Add student</Button>}
+            fields={fields()}
+            action={createStudent}
+          />
+        </div>
       </div>
       <Table>
         <TableHeader>
