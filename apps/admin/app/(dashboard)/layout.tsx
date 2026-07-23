@@ -5,11 +5,13 @@ import {
   Brain,
   GraduationCap,
   LayoutDashboard,
+  ScrollText,
   School,
   Users,
   UserSquare,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { currentUserRole } from "@/lib/queries/student-report";
 import packageJson from "../../package.json";
 import { SignOutButton } from "./sign-out-button";
 
@@ -20,6 +22,10 @@ const NAV = [
   { href: "/classes", label: "Classes", icon: GraduationCap },
   { href: "/teachers", label: "Teachers", icon: UserSquare },
   { href: "/students", label: "Students", icon: Users },
+];
+
+const SUPER_ADMIN_NAV = [
+  { href: "/audit", label: "Audit log", icon: ScrollText },
 ];
 
 export default async function DashboardLayout({
@@ -33,6 +39,10 @@ export default async function DashboardLayout({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const role = await currentUserRole();
+  const nav =
+    role === "super_admin" ? [...NAV, ...SUPER_ADMIN_NAV] : NAV;
+
   return (
     <div className="flex min-h-screen">
       <aside className="bg-sidebar border-sidebar-border flex w-56 flex-col border-r">
@@ -41,7 +51,7 @@ export default async function DashboardLayout({
           <span className="text-lg font-semibold">MindSprint</span>
         </div>
         <nav className="flex-1 space-y-1 px-2">
-          {NAV.map(({ href, label, icon: Icon }) => (
+          {nav.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}

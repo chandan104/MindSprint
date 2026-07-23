@@ -140,8 +140,9 @@ select throws_ok(
   '42501', null, 'non-owning user cannot insert events into another teacher''s session');
 
 select is(
-  (select count(*) > 0 from public.audit_logs),
-  true, 'school admin can read audit logs');
+  (select count(*) from public.audit_logs),
+  0::bigint,
+  'school admin cannot read audit logs (cross-tenant; super_admin only)');
 
 select results_eq(
   'select count(*)::int from public.user_roles',
