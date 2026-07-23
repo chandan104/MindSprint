@@ -20,6 +20,9 @@ class PatternDetectiveModule implements AssessmentModule {
   String get displayName => 'Pattern Detective';
 
   @override
+  bool get requiresContentItems => true;
+
+  @override
   Widget buildRunner(AssessmentRunContext context) =>
       PatternDetectiveRunner(runContext: context);
 }

@@ -19,6 +19,9 @@ class SequenceLogicModule implements AssessmentModule {
   String get displayName => 'Sequence Logic';
 
   @override
+  bool get requiresContentItems => false; // generates number series
+
+  @override
   Widget buildRunner(AssessmentRunContext context) =>
       SequenceLogicRunner(runContext: context);
 }

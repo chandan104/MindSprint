@@ -49,14 +49,19 @@ class _AssessmentSetupScreenState extends ConsumerState<AssessmentSetupScreen> {
       _error = null;
     });
     try {
+      // Generative modules (math, number series) make their own stimuli and
+      // need no picture category — skip the item fetch and the count guard.
+      final module = moduleForKey(level.moduleKey);
+      final needsItems = module?.requiresContentItems ?? true;
+
       final categoryKey = level.config['category_key'] as String?;
-      final items = categoryKey == null
+      final items = (!needsItems || categoryKey == null)
           ? const <ContentItem>[]
           : await ref
               .read(contentRepositoryProvider)
               .itemsForCategory(categoryKey);
 
-      if (items.length < _minItemsFor(level)) {
+      if (needsItems && items.length < _minItemsFor(level)) {
         setState(() {
           _starting = false;
           _error =

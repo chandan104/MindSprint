@@ -20,6 +20,9 @@ class MemoryRecallModule implements AssessmentModule {
   String get displayName => 'Memory Recall';
 
   @override
+  bool get requiresContentItems => true;
+
+  @override
   Widget buildRunner(AssessmentRunContext context) =>
       MemoryRecallRunner(runContext: context);
 }

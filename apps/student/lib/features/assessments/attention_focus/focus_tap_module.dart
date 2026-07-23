@@ -19,6 +19,9 @@ class FocusTapModule implements AssessmentModule {
   String get displayName => 'Focus Tap';
 
   @override
+  bool get requiresContentItems => true;
+
+  @override
   Widget buildRunner(AssessmentRunContext context) =>
       FocusTapRunner(runContext: context);
 }

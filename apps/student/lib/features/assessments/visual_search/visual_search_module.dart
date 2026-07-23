@@ -19,6 +19,9 @@ class VisualSearchModule implements AssessmentModule {
   String get displayName => 'Visual Search';
 
   @override
+  bool get requiresContentItems => true;
+
+  @override
   Widget buildRunner(AssessmentRunContext context) =>
       VisualSearchRunner(runContext: context);
 }

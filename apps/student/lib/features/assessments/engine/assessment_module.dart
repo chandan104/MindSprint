@@ -44,5 +44,10 @@ abstract interface class AssessmentModule {
   /// in-gameplay fallback).
   String get displayName;
 
+  /// Whether this module draws its stimuli from a picture category. Modules
+  /// that generate their own content (numbers, arithmetic) return false, so
+  /// the setup screen does not gate them on category item counts.
+  bool get requiresContentItems;
+
   Widget buildRunner(AssessmentRunContext context);
 }

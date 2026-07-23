@@ -19,6 +19,9 @@ class MathSpeedModule implements AssessmentModule {
   String get displayName => 'Mathematics Speed';
 
   @override
+  bool get requiresContentItems => false; // generates arithmetic questions
+
+  @override
   Widget buildRunner(AssessmentRunContext context) =>
       MathSpeedRunner(runContext: context);
 }
