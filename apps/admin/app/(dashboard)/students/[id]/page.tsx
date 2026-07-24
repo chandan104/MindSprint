@@ -2,8 +2,10 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddNoteForm } from "@/components/admin/add-note-form";
+import { CognitiveSnapshot } from "@/components/admin/cognitive-snapshot";
 import { EraseStudentDialog } from "@/components/admin/erase-student-dialog";
 import { Sparkline } from "@/components/admin/sparkline";
+import { computeCognitiveProfile } from "@/lib/insights/cognitive-score";
 import { eraseStudent } from "@/lib/actions/erasure";
 import { addTeacherNote } from "@/lib/actions/notes";
 import {
@@ -79,6 +81,24 @@ export default async function StudentReportPage({
     ]);
   }
 
+  const profile = computeCognitiveProfile(
+    trustworthy.map((s) => {
+      const p = toPoint(s);
+      const extra = (s.session_metrics[0]?.extra ?? {}) as Record<string, unknown>;
+      return {
+        moduleKey: s.module_key,
+        startedAt: p.startedAt,
+        accuracy: p.accuracy,
+        medianDecisionMs: p.medianDecisionMs,
+        reactionMs:
+          typeof extra["reaction_time_ms"] === "number"
+            ? (extra["reaction_time_ms"] as number)
+            : null,
+        hesitationCount: p.hesitationCount,
+      };
+    })
+  );
+
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -97,6 +117,8 @@ export default async function StudentReportPage({
           />
         )}
       </div>
+
+      <CognitiveSnapshot profile={profile} />
 
       {byModule.size === 0 && (
         <Card>
