@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
 import { AddNoteForm } from "@/components/admin/add-note-form";
 import { CognitiveSnapshot } from "@/components/admin/cognitive-snapshot";
+import { CohortComparisonCard } from "@/components/admin/cohort-comparison";
 import { EraseStudentDialog } from "@/components/admin/erase-student-dialog";
 import { RadarChart } from "@/components/admin/radar-chart";
 import { Sparkline } from "@/components/admin/sparkline";
 import { TrendLine } from "@/components/admin/trend-line";
 import { computeCognitiveProfile } from "@/lib/insights/cognitive-score";
+import { getCohortComparison } from "@/lib/queries/cohort";
 import { eraseStudent } from "@/lib/actions/erasure";
 import { addTeacherNote } from "@/lib/actions/notes";
 import {
@@ -64,9 +67,10 @@ export default async function StudentReportPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [{ student, sessions, notes }, role] = await Promise.all([
+  const [{ student, sessions, notes }, role, cohort] = await Promise.all([
     getStudentReport(id),
     currentUserRole(),
+    getCohortComparison(id),
   ]);
   const isTeacher = role === "teacher";
   const canErase = role === "school_admin" || role === "super_admin";
@@ -112,15 +116,37 @@ export default async function StudentReportPage({
             {sessions.length} session{sessions.length === 1 ? "" : "s"} recorded
           </p>
         </div>
-        {canErase && (
-          <EraseStudentDialog
-            studentName={student.full_name}
-            action={eraseStudent.bind(null, id)}
-          />
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/students/${id}/report`}
+            className={buttonVariants({ variant: "default" })}
+          >
+            Report (PDF)
+          </Link>
+          <a
+            href={`/students/${id}/export.xlsx`}
+            className={buttonVariants({ variant: "outline" })}
+          >
+            Export Excel
+          </a>
+          <a
+            href={`/students/${id}/export`}
+            className={buttonVariants({ variant: "outline" })}
+          >
+            Export CSV
+          </a>
+          {canErase && (
+            <EraseStudentDialog
+              studentName={student.full_name}
+              action={eraseStudent.bind(null, id)}
+            />
+          )}
+        </div>
       </div>
 
       <CognitiveSnapshot profile={profile} />
+
+      <CohortComparisonCard data={cohort} />
 
       {trustworthy.length >= 2 && (
         <div className="grid gap-6 lg:grid-cols-2">

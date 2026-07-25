@@ -128,3 +128,17 @@
     @apply font-sans;
   }
 }
+/* Print: strip app chrome so reports save as clean, professional PDFs. */
+@media print {
+  aside,
+  .no-print {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  .print-avoid-break {
+    break-inside: avoid;
+  }
+}
