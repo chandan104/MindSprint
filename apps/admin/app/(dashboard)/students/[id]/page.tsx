@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddNoteForm } from "@/components/admin/add-note-form";
 import { CognitiveSnapshot } from "@/components/admin/cognitive-snapshot";
 import { EraseStudentDialog } from "@/components/admin/erase-student-dialog";
+import { RadarChart } from "@/components/admin/radar-chart";
 import { Sparkline } from "@/components/admin/sparkline";
+import { TrendLine } from "@/components/admin/trend-line";
 import { computeCognitiveProfile } from "@/lib/insights/cognitive-score";
 import { eraseStudent } from "@/lib/actions/erasure";
 import { addTeacherNote } from "@/lib/actions/notes";
@@ -119,6 +121,66 @@ export default async function StudentReportPage({
       </div>
 
       <CognitiveSnapshot profile={profile} />
+
+      {trustworthy.length >= 2 && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Cognitive profile</CardTitle>
+            </CardHeader>
+            <CardContent className="flex justify-center">
+              <RadarChart
+                axes={[
+                  { label: "Memory", value: profile.domains.workingMemory },
+                  { label: "Attention", value: profile.domains.attention },
+                  { label: "Speed", value: profile.domains.processingSpeed },
+                  { label: "Reasoning", value: profile.domains.reasoning },
+                ]}
+              />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Trends over all sessions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <TrendLine
+                label="Accuracy"
+                unit="%"
+                values={trustworthy
+                  .map((s) => s.session_metrics[0]?.accuracy)
+                  .filter((a): a is number => a != null)
+                  .map((a) => Math.round(a * 100))}
+              />
+              <TrendLine
+                label="Decision speed"
+                unit="ms"
+                invert
+                values={trustworthy
+                  .map(
+                    (s) =>
+                      (s.session_metrics[0]?.extra as Record<string, unknown>)?.[
+                        "median_decision_ms"
+                      ]
+                  )
+                  .filter((v): v is number => typeof v === "number")}
+              />
+              <TrendLine
+                label="Hesitations"
+                invert
+                values={trustworthy
+                  .map(
+                    (s) =>
+                      (s.session_metrics[0]?.extra as Record<string, unknown>)?.[
+                        "hesitation_count"
+                      ]
+                  )
+                  .filter((v): v is number => typeof v === "number")}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {byModule.size === 0 && (
         <Card>

@@ -14,8 +14,8 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // eslint-disable-next-line no-console -- production error surface;
-    // replace with a real monitoring sink when one is adopted (backlog).
+    // Production error surface; replace with a real monitoring sink when one
+    // is adopted (backlog).
     console.error("[MindSprint admin] unhandled error", error);
   }, [error]);
 
