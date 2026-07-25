@@ -4,18 +4,35 @@
   "title": "Memory Recall level config v1",
   "type": "object",
   "required": [
-    "category_key",
     "sequence_length",
     "display_time_ms",
     "inter_item_gap_ms",
     "choice_grid_size"
   ],
   "properties": {
-    "category_key": { "type": "string", "minLength": 1 },
+    "symbol_set": {
+      "enum": ["pictures", "letters", "numbers"],
+      "description": "Stimulus type (default pictures). letters/numbers are generated content and ignore category_key."
+    },
+    "category_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Required only when symbol_set is pictures (or absent)."
+    },
     "sequence_length": { "type": "integer", "minimum": 2, "maximum": 12 },
     "display_time_ms": { "type": "integer", "minimum": 250, "maximum": 10000 },
     "inter_item_gap_ms": { "type": "integer", "minimum": 0, "maximum": 5000 },
     "choice_grid_size": { "type": "integer", "minimum": 4, "maximum": 16 },
+    "chunk_size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3,
+      "description": "Group N symbols per shown/choice item (default 1). Chunking = Extreme difficulty (remember AB, CD as units)."
+    },
+    "case_mode": {
+      "enum": ["upper", "mixed"],
+      "description": "letters only: upper (default) or mixed upper/lower with visually-similar distractors."
+    },
     "trial_count": {
       "type": "integer",
       "minimum": 1,

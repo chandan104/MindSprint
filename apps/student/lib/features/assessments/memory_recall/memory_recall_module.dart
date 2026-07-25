@@ -11,6 +11,7 @@ import '../../../core/widgets/countdown_bar.dart';
 import '../domain/assessment_models.dart';
 import '../engine/assessment_module.dart';
 import '../widgets/item_visual.dart';
+import 'symbol_pool.dart';
 
 class MemoryRecallModule implements AssessmentModule {
   @override
@@ -36,13 +37,19 @@ class _Config {
   final int interItemGapMs;
   final int choiceGridSize;
   final int trialCount;
+  final String symbolSet;
+  final int chunkSize;
+  final String caseMode;
 
   _Config(Map<String, Object?> raw)
       : sequenceLength = raw['sequence_length'] as int,
         displayTimeMs = raw['display_time_ms'] as int,
         interItemGapMs = raw['inter_item_gap_ms'] as int,
         choiceGridSize = raw['choice_grid_size'] as int,
-        trialCount = raw['trial_count'] as int? ?? 1;
+        trialCount = raw['trial_count'] as int? ?? 1,
+        symbolSet = raw['symbol_set'] as String? ?? 'pictures',
+        chunkSize = raw['chunk_size'] as int? ?? 1,
+        caseMode = raw['case_mode'] as String? ?? 'upper';
 }
 
 enum _Phase { ready, exposure, recall, roundDone }
@@ -84,11 +91,23 @@ class _MemoryRecallRunnerState extends State<MemoryRecallRunner> {
   AssessmentRunContext get _run => widget.runContext;
   ModuleIdentity get _identity => moduleIdentity('memory_recall');
 
+  late final List<ContentItem> _pool;
+
   @override
   void initState() {
     super.initState();
     _config = _Config(_run.level.config);
     _rng = widget.random ?? Random();
+    // Pictures use the fetched category items; letters/numbers are generated
+    // so this mode needs a large enough distinct pool for the grid.
+    _pool = buildSymbolPool(
+      symbolSet: _config.symbolSet,
+      poolSize: max(_config.choiceGridSize, _config.sequenceLength),
+      chunkSize: _config.chunkSize,
+      caseMode: _config.caseMode,
+      rng: _rng,
+      categoryItems: _run.items,
+    );
   }
 
   @override
@@ -99,7 +118,7 @@ class _MemoryRecallRunnerState extends State<MemoryRecallRunner> {
   }
 
   void _beginRound() {
-    final pool = [..._run.items]..shuffle(_rng);
+    final pool = [..._pool]..shuffle(_rng);
     _sequence = pool.take(_config.sequenceLength).toList();
     final distractors = pool
         .skip(_config.sequenceLength)

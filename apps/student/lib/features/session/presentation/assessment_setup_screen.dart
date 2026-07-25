@@ -51,8 +51,11 @@ class _AssessmentSetupScreenState extends ConsumerState<AssessmentSetupScreen> {
     try {
       // Generative modules (math, number series) make their own stimuli and
       // need no picture category — skip the item fetch and the count guard.
+      // Memory Recall with a letters/numbers symbol_set is likewise generated.
       final module = moduleForKey(level.moduleKey);
-      final needsItems = module?.requiresContentItems ?? true;
+      final symbolSet = level.config['symbol_set'] as String?;
+      final generatedSymbols = symbolSet == 'letters' || symbolSet == 'numbers';
+      final needsItems = (module?.requiresContentItems ?? true) && !generatedSymbols;
 
       final categoryKey = level.config['category_key'] as String?;
       final items = (!needsItems || categoryKey == null)
