@@ -10,6 +10,8 @@ import { RadarChart } from "@/components/admin/radar-chart";
 import { Sparkline } from "@/components/admin/sparkline";
 import { TrendLine } from "@/components/admin/trend-line";
 import { computeCognitiveProfile } from "@/lib/insights/cognitive-score";
+import { moduleAverages, weeklyRollup } from "@/lib/insights/rollups";
+import { BarCompare } from "@/components/admin/bar-compare";
 import { getCohortComparison } from "@/lib/queries/cohort";
 import { eraseStudent } from "@/lib/actions/erasure";
 import { addTeacherNote } from "@/lib/actions/notes";
@@ -202,6 +204,49 @@ export default async function StudentReportPage({
                       ]
                   )
                   .filter((v): v is number => typeof v === "number")}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {trustworthy.length >= 2 && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Weekly accuracy</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TrendLine
+                label="Avg accuracy per week"
+                unit="%"
+                values={weeklyRollup(
+                  trustworthy.map((s) => ({
+                    startedAt: s.started_at,
+                    value:
+                      s.session_metrics[0]?.accuracy != null
+                        ? Math.round(s.session_metrics[0].accuracy * 100)
+                        : null,
+                  }))
+                ).map((p) => p.value)}
+              />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Module comparison</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BarCompare
+                items={moduleAverages(
+                  trustworthy.map((s) => ({
+                    moduleKey: s.module_key,
+                    accuracy: s.session_metrics[0]?.accuracy ?? null,
+                  }))
+                ).map((m) => ({
+                  label: MODULE_NAMES[m.moduleKey] ?? m.moduleKey,
+                  value: m.avgAccuracy,
+                }))}
               />
             </CardContent>
           </Card>
