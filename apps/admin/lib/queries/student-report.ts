@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 
 export type StudentHeader = {
@@ -72,23 +73,34 @@ export async function getStudentReport(studentId: string): Promise<{
   };
 }
 
-/** The signed-in user's platform role. UI-affordance only — RLS and the
- * definer RPCs enforce authorization server-side regardless. */
-export async function currentUserRole(): Promise<
-  "super_admin" | "school_admin" | "teacher" | null
-> {
+/** The authenticated user for this request. Wrapped in React `cache()` so the
+ * layout and every page in one render share a single `auth.getUser()` round
+ * trip instead of re-validating the JWT several times. */
+export const getCurrentUser = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  return (data?.role as "super_admin" | "school_admin" | "teacher") ?? null;
-}
+  return user;
+});
+
+/** The signed-in user's platform role. UI-affordance only — RLS and the
+ * definer RPCs enforce authorization server-side regardless. Also `cache()`d,
+ * so the role query runs at most once per request even though the layout and
+ * the page both ask for it. */
+export const currentUserRole = cache(
+  async (): Promise<"super_admin" | "school_admin" | "teacher" | null> => {
+    const user = await getCurrentUser();
+    if (!user) return null;
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    return (data?.role as "super_admin" | "school_admin" | "teacher") ?? null;
+  }
+);
 
 export async function currentUserIsTeacher(): Promise<boolean> {
   return (await currentUserRole()) === "teacher";

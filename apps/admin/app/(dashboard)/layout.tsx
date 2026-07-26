@@ -10,8 +10,7 @@ import {
   Users,
   UserSquare,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
-import { currentUserRole } from "@/lib/queries/student-report";
+import { currentUserRole, getCurrentUser } from "@/lib/queries/student-report";
 import packageJson from "../../package.json";
 import { SignOutButton } from "./sign-out-button";
 
@@ -33,13 +32,10 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Both are React `cache()`d: this validates the JWT and reads the role once
+  // per request, shared with whatever page renders inside this layout.
+  const [user, role] = await Promise.all([getCurrentUser(), currentUserRole()]);
   if (!user) redirect("/login");
-
-  const role = await currentUserRole();
   const nav =
     role === "super_admin" ? [...NAV, ...SUPER_ADMIN_NAV] : NAV;
 
