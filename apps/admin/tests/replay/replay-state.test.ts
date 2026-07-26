@@ -233,6 +233,66 @@ describe("deriveReplayState (color_selector fixture)", () => {
   });
 });
 
+describe("deriveReplayState (pattern puzzle with an interior blank)", () => {
+  const pattern: ReplayEvent[] = [
+    { seq: 1, t_ms: 0, event_type: "session_started", payload: {} },
+    {
+      seq: 2,
+      t_ms: 500,
+      event_type: "question_displayed",
+      payload: {
+        question_text: "Which picture completes the pattern?",
+        expected_answer: "Square",
+        // Shown row is the full sequence minus the blank; blank_index is the
+        // gap's position in the FULL row (here interior, position 2).
+        sequence: [
+          { item_id: "circle", label: "Circle" },
+          { item_id: "square", label: "Square" },
+          { item_id: "square", label: "Square" },
+        ],
+        blank_index: 2,
+        options: [
+          { item_id: "square", label: "Square" },
+          { item_id: "circle", label: "Circle" },
+        ],
+      },
+    },
+    {
+      seq: 3,
+      t_ms: 1800,
+      event_type: "tap_registered",
+      payload: { target_kind: "choice", item_id: "square", label: "Square", is_correct: true, x: 1, y: 2 },
+    },
+    { seq: 4, t_ms: 2400, event_type: "session_completed", payload: {} },
+  ];
+
+  it("reconstructs the shown row and the interior blank position", () => {
+    const state = deriveReplayState(pattern, 1000);
+    expect(state.phase).toBe("question");
+    expect(state.blankIndex).toBe(2);
+    expect(state.sequence).toHaveLength(3);
+    expect(state.revealedCount).toBe(3);
+    expect(state.question?.expectedAnswer).toBe("Square");
+  });
+
+  it("clears the blank for modules that carry no sequence", () => {
+    const noSeq: ReplayEvent[] = [
+      { seq: 1, t_ms: 0, event_type: "session_started", payload: {} },
+      {
+        seq: 2,
+        t_ms: 500,
+        event_type: "question_displayed",
+        payload: {
+          question_text: "7 + 5",
+          expected_answer: "12",
+          options: [{ item_id: "12", label: "12" }],
+        },
+      },
+    ];
+    expect(deriveReplayState(noSeq, 600).blankIndex).toBeNull();
+  });
+});
+
 describe("deriveReplayState (math-style events)", () => {
   const mathEvents: ReplayEvent[] = [
     { seq: 1, t_ms: 0, event_type: "session_started", payload: {} },

@@ -40,3 +40,35 @@ intended grid).
 
 **Follow-up (deferred):** true conjunction search (target–distractor feature
 similarity) needs per-item visual-feature metadata the content model lacks.
+
+### #2 Pattern Detective — rule-finding, not extrapolation
+**Problem:** the blank was **always the final slot**, so the task measured
+"predict the next item" rather than "find the rule"; distractors were random
+unrelated pool items, so the answer was often the only option that fit the
+rhythm (solvable by elimination, not reasoning). `mirror`'s answer was the first
+shown item. The internal rule name leaked into the prompt.
+
+**Fix:**
+- **Variable blank position** — placed where the rule is still recoverable (a
+  full period of context precedes it for periodic kinds; any non-self-mirroring
+  slot for palindromes). Forces application of the rule, not last-item copying.
+- **Rule-based distractors** — the "repeat the neighbour" naive-continuation
+  error plus other wrong-slot motif members are offered before wider-pool
+  fillers, so a child cannot win by rhythm/elimination.
+- Prompt no longer leaks the rule ("Which picture completes the pattern?").
+- New optional `blank_index` on `question_displayed` (contract-additive,
+  null-safe). `sequence` remains the shown row (full minus blank).
+
+**Replay:** the reducer now reconstructs the shown row and the blank position on
+`question_displayed`; the replayer renders the puzzle with the "?" in place. The
+memory-recall rebuild grid is guarded to recall modules (those set no
+`question`) so question modules no longer mis-render it.
+
+**Drift guards:** metric engines unaffected (no metric change); the existing
+`pattern_recognition_basic.json` fixture (final-blank, no `blank_index`) still
+validates — proving backward compatibility.
+
+⚠ **interpretation:** post-change Pattern Detective accuracy reflects genuine
+rule induction and is **not directly comparable** to pre-change scores, which
+were inflated by the always-final blank and rhythm-solvable distractors. Trend
+lines spanning the change should be read with this break in mind.

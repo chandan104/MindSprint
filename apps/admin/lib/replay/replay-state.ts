@@ -49,6 +49,8 @@ export type ReplayState = {
     expectedAnswer: string;
     options: { itemId: string; label: string }[];
   } | null;
+  /** Position of the hidden slot in `sequence` (pattern puzzles); null if none. */
+  blankIndex: number | null;
   /** True when >3000ms have passed in an answer phase with no input. */
   isHesitating: boolean;
   lastEventType: string | null;
@@ -65,6 +67,7 @@ const initialState: ReplayState = {
   taps: [],
   matchedIds: [],
   question: null,
+  blankIndex: null,
   instructionText: null,
   currentStimulus: null,
   isHesitating: false,
@@ -129,17 +132,25 @@ export function deriveReplayState(
         state.instructionText = String(event.payload["instruction_text"] ?? "");
         lastInputMarkMs = event.t_ms;
         break;
-      case "question_displayed":
+      case "question_displayed": {
         state.roundNumber += 1;
         state.question = {
           text: String(event.payload["question_text"] ?? ""),
           expectedAnswer: String(event.payload["expected_answer"] ?? ""),
           options: asItems(event.payload["options"]),
         };
+        // Show the puzzle exactly as the child saw it: the shown row and the
+        // position of the blank (pattern puzzles place it anywhere, not just
+        // at the end). Modules without a sequence simply clear it.
+        state.sequence = asItems(event.payload["sequence"]);
+        state.revealedCount = state.sequence.length;
+        const blank = event.payload["blank_index"];
+        state.blankIndex = typeof blank === "number" ? blank : null;
         state.taps = [];
         state.phase = "question";
         lastInputMarkMs = event.t_ms;
         break;
+      }
       case "tap_registered": {
         const tap: ReplayTap = {
           itemId: event.payload["item_id"] as string | undefined,

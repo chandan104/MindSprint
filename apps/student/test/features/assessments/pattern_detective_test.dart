@@ -34,12 +34,14 @@ void main() {
           random: Random(seed),
         );
 
-    test('ab alternates with period 2 and the answer continues the rule', () {
+    test('ab alternates with period 2 and the answer fills the blank', () {
       for (var seed = 0; seed < 50; seed++) {
         final q = gen('ab', seed: seed).next();
-        final full = [...q.shown, q.answer];
-        for (var i = 2; i < full.length; i++) {
-          expect(full[i].id, full[i - 2].id,
+        expect(q.full[q.blankIndex].id, q.answer.id);
+        expect(q.blankIndex, greaterThanOrEqualTo(2),
+            reason: 'a full period must precede the blank');
+        for (var i = 2; i < q.full.length; i++) {
+          expect(q.full[i].id, q.full[i - 2].id,
               reason: 'ab pattern must repeat with period 2');
         }
       }
@@ -48,9 +50,9 @@ void main() {
     test('abc repeats with period 3', () {
       for (var seed = 0; seed < 50; seed++) {
         final q = gen('abc', seed: seed).next();
-        final full = [...q.shown, q.answer];
-        for (var i = 3; i < full.length; i++) {
-          expect(full[i].id, full[i - 3].id);
+        expect(q.full[q.blankIndex].id, q.answer.id);
+        for (var i = 3; i < q.full.length; i++) {
+          expect(q.full[i].id, q.full[i - 3].id);
         }
       }
     });
@@ -58,34 +60,59 @@ void main() {
     test('aabb repeats with period 4 in pairs', () {
       for (var seed = 0; seed < 50; seed++) {
         final q = gen('aabb', seed: seed, length: 7).next();
-        final full = [...q.shown, q.answer];
-        for (var i = 4; i < full.length; i++) {
-          expect(full[i].id, full[i - 4].id);
+        expect(q.full[q.blankIndex].id, q.answer.id);
+        for (var i = 4; i < q.full.length; i++) {
+          expect(q.full[i].id, q.full[i - 4].id);
         }
-        expect(full[0].id, full[1].id, reason: 'starts with a pair');
+        expect(q.full[0].id, q.full[1].id, reason: 'starts with a pair');
       }
     });
 
     test('abb repeats with period 3, one head two tails', () {
       for (var seed = 0; seed < 50; seed++) {
         final q = gen('abb', seed: seed).next();
-        final full = [...q.shown, q.answer];
-        for (var i = 3; i < full.length; i++) {
-          expect(full[i].id, full[i - 3].id);
+        expect(q.full[q.blankIndex].id, q.answer.id);
+        for (var i = 3; i < q.full.length; i++) {
+          expect(q.full[i].id, q.full[i - 3].id);
         }
-        expect(full[1].id, full[2].id, reason: 'positions 1,2 are the pair');
+        expect(q.full[1].id, q.full[2].id, reason: 'positions 1,2 are the pair');
       }
     });
 
-    test('mirror sequences are palindromes', () {
+    test('mirror sequences are palindromes with a recoverable blank', () {
       for (var seed = 0; seed < 50; seed++) {
         final q = gen('mirror', seed: seed, length: 6).next();
-        final full = [...q.shown, q.answer];
-        for (var i = 0; i < full.length; i++) {
-          expect(full[i].id, full[full.length - 1 - i].id,
+        expect(q.full[q.blankIndex].id, q.answer.id);
+        // The blank must not be the self-mirroring centre (else unrecoverable).
+        expect(q.blankIndex, isNot(q.full.length - 1 - q.blankIndex));
+        for (var i = 0; i < q.full.length; i++) {
+          expect(q.full[i].id, q.full[q.full.length - 1 - i].id,
               reason: 'mirror pattern must read the same in both directions');
         }
       }
+    });
+
+    test('the "repeat the neighbour" foil is offered as a distractor', () {
+      // With ≥3 options the naive-continuation error must be selectable, so a
+      // child cannot win by picking the item next to the gap.
+      var sawNeighbourFoil = 0;
+      for (var seed = 0; seed < 60; seed++) {
+        final q = PatternGenerator(
+          kinds: const ['ab', 'abc', 'aabb', 'abb'],
+          sequenceLength: 6,
+          optionCount: 4,
+          pool: _items,
+          random: Random(seed),
+        ).next();
+        if (q.blankIndex > 0) {
+          final neighbour = q.full[q.blankIndex - 1];
+          if (neighbour.id != q.answer.id &&
+              q.options.any((o) => o.id == neighbour.id)) {
+            sawNeighbourFoil++;
+          }
+        }
+      }
+      expect(sawNeighbourFoil, greaterThan(0));
     });
 
     test('options contain the answer exactly once with no duplicates', () {

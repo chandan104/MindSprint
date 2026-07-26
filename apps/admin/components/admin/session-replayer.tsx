@@ -157,7 +157,11 @@ export function SessionReplayer({
           </div>
         )}
 
+        {/* Memory-recall rebuild grid: recall modules populate `sequence` but
+            never a `question`, which distinguishes them from question modules
+            that now also carry a shown row. */}
         {state.sequence.length > 0 &&
+          state.question === null &&
           (state.phase === "recall" ||
             state.phase === "complete" ||
             state.phase === "aborted") && (
@@ -221,7 +225,34 @@ export function SessionReplayer({
 
         {state.question && state.phase === "question" && (
           <div className="space-y-3">
-            <p className="text-2xl font-bold">{state.question.text} = ?</p>
+            <p className="text-2xl font-bold">
+              {state.question.text}
+              {state.blankIndex === null ? " = ?" : ""}
+            </p>
+            {/* Pattern puzzle: the shown row with the blank ("?") in position. */}
+            {state.blankIndex !== null && state.sequence.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {Array.from(
+                  { length: state.sequence.length + 1 },
+                  (_unused, pos) => pos
+                ).map((pos) => {
+                  const before = pos < state.blankIndex! ? pos : pos - 1;
+                  const isBlank = pos === state.blankIndex;
+                  return (
+                    <div
+                      key={`cell-${pos}`}
+                      className={`rounded-lg border-2 px-4 py-3 text-sm font-semibold ${
+                        isBlank
+                          ? "border-indigo-400 text-indigo-400"
+                          : "border-border"
+                      }`}
+                    >
+                      {isBlank ? "?" : state.sequence[before].label}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
             <div className="flex flex-wrap gap-2">
               {state.question.options.map((option) => {
                 const tapped = state.taps.find(

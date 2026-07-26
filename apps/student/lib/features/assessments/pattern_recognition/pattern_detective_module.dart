@@ -112,12 +112,15 @@ class _PatternDetectiveRunnerState extends State<PatternDetectiveRunner> {
     });
 
     _run.recorder.record('question_displayed', {
-      'question_text': 'What comes next? (${question.kind} pattern)',
+      // Kind is no longer leaked to the child (it named the rule to solve).
+      'question_text': 'Which picture completes the pattern?',
       'expected_answer': question.answer.label,
       'sequence': [
         for (final item in question.shown)
           {'item_id': item.id, 'label': item.label},
       ],
+      // Position of the gap in the full row (may be interior, not just last).
+      'blank_index': question.blankIndex,
       'options': [
         for (final item in question.options)
           {'item_id': item.id, 'label': item.label},
@@ -359,33 +362,38 @@ class _QuestionView extends StatelessWidget {
               alignment: WrapAlignment.center,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                for (final item in question.shown)
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: AppTheme.bg,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppTheme.border),
+                // The full row in order; the blank slot (which may be interior)
+                // is a highlighted "?" the child must fill by finding the rule.
+                for (var i = 0; i < question.full.length; i++)
+                  if (i == question.blankIndex)
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: AppTheme.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: identity.accent, width: 2),
+                      ),
+                      child: Center(
+                        child: Text('?',
+                            style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                                color: identity.accent)),
+                      ),
+                    )
+                  else
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: AppTheme.bg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppTheme.border),
+                      ),
+                      child: Center(
+                          child: ItemVisual(item: question.full[i], size: 34)),
                     ),
-                    child: Center(child: ItemVisual(item: item, size: 34)),
-                  ),
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: identity.accent, width: 2),
-                  ),
-                  child: Center(
-                    child: Text('?',
-                        style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: identity.accent)),
-                  ),
-                ),
               ],
             ),
           ),

@@ -103,6 +103,7 @@
             "additionalProperties": false
           }
         },
+        "blank_index": { "type": "integer", "minimum": 0 },
         "options": {
           "type": "array",
           "items": {
