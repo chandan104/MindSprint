@@ -36,6 +36,10 @@ class ProvisionalMetrics {
   /// null for modules without a hide phase).
   final int? recallTimeMs;
 
+  /// First instruction_shown → first stimulus (Color Selector's
+  /// instruction-reading delay); null for modules without instructions.
+  final int? instructionDelayMs;
+
   /// Gaps between consecutive answer taps.
   final List<int> decisionTimesMs;
 
@@ -50,6 +54,7 @@ class ProvisionalMetrics {
     required this.totalTimeMs,
     required this.reactionTimeMs,
     required this.recallTimeMs,
+    required this.instructionDelayMs,
     required this.decisionTimesMs,
     required this.hesitationCount,
     required this.totalIdleTimeMs,
@@ -99,6 +104,7 @@ class ProvisionalMetrics {
         'median_decision_ms': medianDecisionMs,
         'fastest_decision_ms': fastestDecisionMs,
         'slowest_decision_ms': slowestDecisionMs,
+        'instruction_delay_ms': instructionDelayMs,
       };
 }
 
@@ -113,6 +119,7 @@ ProvisionalMetrics computeProvisionalMetrics(List<MetricEvent> events) {
       totalTimeMs: 0,
       reactionTimeMs: null,
       recallTimeMs: null,
+      instructionDelayMs: null,
       decisionTimesMs: [],
       hesitationCount: 0,
       totalIdleTimeMs: 0,
@@ -127,6 +134,7 @@ ProvisionalMetrics computeProvisionalMetrics(List<MetricEvent> events) {
 
   int? firstStimulusT;
   int? sequenceHiddenT;
+  int? instructionT;
   int? reaction;
   int? recall;
   final taps = <MetricEvent>[];
@@ -136,6 +144,8 @@ ProvisionalMetrics computeProvisionalMetrics(List<MetricEvent> events) {
   for (final event in events) {
     if (_stimulusEvents.contains(event.eventType)) {
       firstStimulusT ??= event.tMs;
+    } else if (event.eventType == 'instruction_shown') {
+      instructionT ??= event.tMs;
     } else if (event.eventType == 'sequence_hidden') {
       sequenceHiddenT ??= event.tMs;
     } else if (event.eventType == 'tap_registered') {
@@ -174,6 +184,9 @@ ProvisionalMetrics computeProvisionalMetrics(List<MetricEvent> events) {
     totalTimeMs: end - start,
     reactionTimeMs: reaction,
     recallTimeMs: recall,
+    instructionDelayMs: (instructionT != null && firstStimulusT != null)
+        ? firstStimulusT - instructionT
+        : null,
     decisionTimesMs: decisions,
     hesitationCount: hesitations,
     totalIdleTimeMs: idle,

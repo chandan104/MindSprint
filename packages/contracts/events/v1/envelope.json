@@ -20,6 +20,7 @@
         "sequence_display_started",
         "item_displayed",
         "sequence_hidden",
+        "instruction_shown",
         "question_displayed",
         "tap_registered",
         "answer_submitted"

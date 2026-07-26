@@ -72,6 +72,13 @@ const _identities = <String, ModuleIdentity>{
     gradient: [Color(0xFF8B5CF6), Color(0xFF7C3AED), Color(0xFF6D28D9)],
     accent: Color(0xFFC4B5FD),
   ),
+  'color_selector': ModuleIdentity(
+    emoji: '🎨',
+    world: 'Chroma — Rainbow Rapids',
+    tagline: 'Read carefully. Tap the right one.',
+    gradient: [Color(0xFFF43F5E), Color(0xFFF59E0B), Color(0xFF10B981)],
+    accent: Color(0xFFFDA4AF),
+  ),
 };
 
 ModuleIdentity moduleIdentity(String moduleKey) =>

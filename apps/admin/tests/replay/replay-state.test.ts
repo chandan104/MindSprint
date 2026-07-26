@@ -191,6 +191,48 @@ describe("deriveReplayState (sequence_logic fixture)", () => {
   });
 });
 
+describe("deriveReplayState (color_selector fixture)", () => {
+  const csFixture = JSON.parse(
+    readFileSync(
+      join(
+        __dirname,
+        "../../../../packages/contracts/fixtures/color_selector_basic.json"
+      ),
+      "utf8"
+    )
+  ) as { events: ReplayEvent[] };
+  const cs = csFixture.events;
+
+  it("shows the animated instruction before the grid appears", () => {
+    const reading = deriveReplayState(cs, 600);
+    expect(reading.phase).toBe("instruction");
+    expect(reading.instructionText).toBe("Tap the RED colour");
+    expect(reading.question).toBeNull();
+  });
+
+  it("advances to the question with options once the grid is shown", () => {
+    const grid = deriveReplayState(cs, 1600);
+    expect(grid.phase).toBe("question");
+    expect(grid.question?.expectedAnswer).toBe("red");
+    expect(grid.instructionText).toBe("Tap the RED colour");
+    expect(grid.taps).toHaveLength(0);
+  });
+
+  it("captures the correct tap then the later wrong tap", () => {
+    const afterCorrect = deriveReplayState(cs, 2500);
+    expect(afterCorrect.taps).toHaveLength(1);
+    expect(afterCorrect.taps[0].isCorrect).toBe(true);
+
+    const secondRound = deriveReplayState(cs, 9100);
+    expect(secondRound.instructionText).toBe("Tap the BLUE colour");
+    expect(secondRound.taps[0].isCorrect).toBe(false);
+  });
+
+  it("completes at the end", () => {
+    expect(deriveReplayState(cs, 21100).phase).toBe("complete");
+  });
+});
+
 describe("deriveReplayState (math-style events)", () => {
   const mathEvents: ReplayEvent[] = [
     { seq: 1, t_ms: 0, event_type: "session_started", payload: {} },

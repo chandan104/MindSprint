@@ -47,6 +47,7 @@ void main() {
         expect(m.medianDecisionMs, expected['median_decision_ms']);
         expect(m.fastestDecisionMs, expected['fastest_decision_ms']);
         expect(m.slowestDecisionMs, expected['slowest_decision_ms']);
+        expect(m.instructionDelayMs, expected['instruction_delay_ms']);
       });
     }
 

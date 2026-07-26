@@ -1,0 +1,75 @@
+{
+  "module_key": "color_selector",
+  "description": "Selective-attention colour selection: each round shows an animated instruction (instruction_shown), then the option grid (question_displayed). instruction_delay_ms = first question_displayed t_ms − first instruction_shown t_ms. 3 rounds: correct, wrong, timeout. Reuses question/tap/answer contract for reaction/accuracy/hesitation.",
+  "level_config": {
+    "colour_count": 4,
+    "time_limit_ms_per_round": 8000,
+    "stroop": false,
+    "instruction_modes": ["colour"]
+  },
+  "expected_metrics_v1": {
+    "total_time_ms": 21100,
+    "reaction_time_ms": 900,
+    "recall_time_ms": null,
+    "decision_times_ms": [6600],
+    "hesitation_count": 1,
+    "total_idle_time_ms": 6600,
+    "longest_pause_ms": 6600,
+    "correct_count": 1,
+    "error_count": 2,
+    "accuracy": 0.3333333333333333,
+    "median_decision_ms": 6600,
+    "fastest_decision_ms": 6600,
+    "slowest_decision_ms": 6600,
+    "instruction_delay_ms": 1200
+  },
+  "events": [
+    { "seq": 1, "t_ms": 0, "event_type": "session_started", "payload": {} },
+    { "seq": 2, "t_ms": 300, "event_type": "instruction_shown",
+      "payload": { "instruction_text": "Tap the RED colour", "instruction_kind": "colour" } },
+    { "seq": 3, "t_ms": 1500, "event_type": "question_displayed",
+      "payload": {
+        "question_text": "Tap the RED colour",
+        "expected_answer": "red",
+        "options": [
+          { "item_id": "red", "label": "Red" },
+          { "item_id": "blue", "label": "Blue" },
+          { "item_id": "green", "label": "Green" },
+          { "item_id": "yellow", "label": "Yellow" }
+        ]
+      } },
+    { "seq": 4, "t_ms": 2400, "event_type": "tap_registered",
+      "payload": { "target_kind": "choice", "item_id": "red", "label": "Red", "is_correct": true, "x": 120.0, "y": 500.0 } },
+    { "seq": 5, "t_ms": 3400, "event_type": "instruction_shown",
+      "payload": { "instruction_text": "Tap the BLUE colour", "instruction_kind": "colour" } },
+    { "seq": 6, "t_ms": 4300, "event_type": "question_displayed",
+      "payload": {
+        "question_text": "Tap the BLUE colour",
+        "expected_answer": "blue",
+        "options": [
+          { "item_id": "red", "label": "Red" },
+          { "item_id": "blue", "label": "Blue" },
+          { "item_id": "green", "label": "Green" },
+          { "item_id": "yellow", "label": "Yellow" }
+        ]
+      } },
+    { "seq": 7, "t_ms": 9000, "event_type": "tap_registered",
+      "payload": { "target_kind": "choice", "item_id": "green", "label": "Green", "is_correct": false, "x": 300.0, "y": 502.0 } },
+    { "seq": 8, "t_ms": 10000, "event_type": "instruction_shown",
+      "payload": { "instruction_text": "Tap the GREEN colour", "instruction_kind": "colour" } },
+    { "seq": 9, "t_ms": 10900, "event_type": "question_displayed",
+      "payload": {
+        "question_text": "Tap the GREEN colour",
+        "expected_answer": "green",
+        "options": [
+          { "item_id": "red", "label": "Red" },
+          { "item_id": "blue", "label": "Blue" },
+          { "item_id": "green", "label": "Green" },
+          { "item_id": "yellow", "label": "Yellow" }
+        ]
+      } },
+    { "seq": 10, "t_ms": 20900, "event_type": "answer_submitted",
+      "payload": { "answer": "timeout", "is_correct": false } },
+    { "seq": 11, "t_ms": 21100, "event_type": "session_completed", "payload": {} }
+  ]
+}

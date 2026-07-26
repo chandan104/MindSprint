@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/presentation/auth_controller.dart';
 import '../attention_focus/focus_tap_module.dart';
+import '../color_selector/color_selector_module.dart';
 import '../math_speed/math_speed_module.dart';
 import '../memory_recall/memory_recall_module.dart';
 import '../pattern_recognition/pattern_detective_module.dart';
@@ -18,6 +19,7 @@ const moduleFlagKeys = <String, String>{
   'pattern_recognition': 'pattern_module',
   'visual_search': 'visual_search_module',
   'sequence_logic': 'sequence_logic_module',
+  'color_selector': 'color_selector_module',
 };
 
 /// All modules compiled into this app version. Future modules: implement
@@ -29,6 +31,7 @@ final _implementations = <String, AssessmentModule Function()>{
   'pattern_recognition': PatternDetectiveModule.new,
   'visual_search': VisualSearchModule.new,
   'sequence_logic': SequenceLogicModule.new,
+  'color_selector': ColorSelectorModule.new,
 };
 
 /// Modules that are both implemented in this build and enabled by server

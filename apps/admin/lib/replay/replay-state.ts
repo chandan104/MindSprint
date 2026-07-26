@@ -27,8 +27,11 @@ export type ReplayState = {
     | "recall"
     | "question"
     | "stimulus"
+    | "instruction"
     | "complete"
     | "aborted";
+  /** Colour Selector instruction currently being read. */
+  instructionText: string | null;
   /** Go/no-go stream stimulus currently on screen (attention modules). */
   currentStimulus: { label: string; isTarget: boolean } | null;
   roundNumber: number;
@@ -62,6 +65,7 @@ const initialState: ReplayState = {
   taps: [],
   matchedIds: [],
   question: null,
+  instructionText: null,
   currentStimulus: null,
   isHesitating: false,
   lastEventType: null,
@@ -118,6 +122,11 @@ export function deriveReplayState(
         break;
       case "sequence_hidden":
         state.phase = "recall";
+        lastInputMarkMs = event.t_ms;
+        break;
+      case "instruction_shown":
+        state.phase = "instruction";
+        state.instructionText = String(event.payload["instruction_text"] ?? "");
         lastInputMarkMs = event.t_ms;
         break;
       case "question_displayed":

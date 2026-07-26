@@ -76,6 +76,15 @@
       "properties": {},
       "additionalProperties": false
     },
+    "instruction_shown": {
+      "type": "object",
+      "required": ["instruction_text"],
+      "properties": {
+        "instruction_text": { "type": "string" },
+        "instruction_kind": { "enum": ["colour", "word"] }
+      },
+      "additionalProperties": false
+    },
     "question_displayed": {
       "type": "object",
       "required": ["question_text", "expected_answer"],
