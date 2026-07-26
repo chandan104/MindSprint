@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/roster/presentation/class_list_screen.dart';
 import '../../features/roster/presentation/student_list_screen.dart';
 import '../../features/session/domain/session_args.dart';
@@ -13,6 +14,7 @@ import '../../features/session/presentation/session_screen.dart';
 /// gestures, not just router navigation.
 class AppRoutes {
   AppRoutes._();
+  static const splash = '/';
   static const login = '/login';
   static const classes = '/classes';
   static const students = '/classes/:classId/students';
@@ -24,8 +26,12 @@ class AppRoutes {
 
 GoRouter buildRouter() {
   return GoRouter(
-    initialLocation: AppRoutes.login,
+    initialLocation: AppRoutes.splash,
     routes: [
+      GoRoute(
+        path: AppRoutes.splash,
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: AppRoutes.login,
         builder: (context, state) => const LoginScreen(),

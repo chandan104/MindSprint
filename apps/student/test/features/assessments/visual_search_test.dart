@@ -69,7 +69,7 @@ void main() {
       config: {
         ..._level.config,
         'target_present_ratio': ratio,
-        if (gridSize != null) 'grid_size': gridSize,
+        'grid_size': ?gridSize,
       },
     );
     await tester.pumpWidget(MaterialApp(

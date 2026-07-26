@@ -3,11 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mindsprint_student/core/router/app_router.dart';
 import 'package:mindsprint_student/core/theme/app_theme.dart';
+import 'package:mindsprint_student/features/auth/presentation/auth_controller.dart';
 
+/// The app now boots through a splash screen that restores any persisted
+/// session. With no session present it lands on login — override the session
+/// probe so tests don't need a live Supabase instance.
 void main() {
   testWidgets('app boots to the teacher login screen', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [hasPersistedSessionProvider.overrideWithValue(() => false)],
         child: MaterialApp.router(
           theme: AppTheme.dark(),
           routerConfig: buildRouter(),
@@ -23,6 +28,7 @@ void main() {
   testWidgets('login form validates before submitting', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [hasPersistedSessionProvider.overrideWithValue(() => false)],
         child: MaterialApp.router(
           theme: AppTheme.dark(),
           routerConfig: buildRouter(),

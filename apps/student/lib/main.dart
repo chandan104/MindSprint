@@ -15,9 +15,16 @@ Future<void> main() async {
     return;
   }
 
+  // Persist the session to disk and refresh access tokens silently in the
+  // background. These are the SDK defaults; setting them explicitly guards the
+  // pilot's "stay signed in across restarts" requirement against default drift.
   await Supabase.initialize(
     url: SupabaseConfig.url,
     publishableKey: SupabaseConfig.anonKey,
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,
+      autoRefreshToken: true,
+    ),
   );
 
   final appVersion = await AuthController.currentAppVersion();
