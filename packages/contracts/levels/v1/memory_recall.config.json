@@ -38,6 +38,12 @@
       "minimum": 1,
       "maximum": 5,
       "description": "Rounds per session (additive, default 1). Each round emits its own sequence_display_started/sequence_hidden pair into the shared session log."
+    },
+    "recall_time_limit_ms": {
+      "type": "integer",
+      "minimum": 3000,
+      "maximum": 120000,
+      "description": "Optional recall-phase time budget (additive). When set, remaining slots are scored as misses on expiry so the score reflects memory, not persistence. Omit for self-paced (young/Easy tiers). Only the FIRST tap per slot is ever scored regardless."
     }
   },
   "additionalProperties": false

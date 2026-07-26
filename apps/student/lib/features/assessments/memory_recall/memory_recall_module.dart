@@ -41,6 +41,12 @@ class _Config {
   final int chunkSize;
   final String caseMode;
 
+  /// Optional recall-phase time limit. When set, an unfinished recall is closed
+  /// out (remaining slots scored as misses) so the score reflects memory, not
+  /// how long a child is willing to keep guessing. Null = self-paced (older
+  /// levels, and Easy tiers for young children).
+  final int? recallTimeLimitMs;
+
   _Config(Map<String, Object?> raw)
       : sequenceLength = raw['sequence_length'] as int,
         displayTimeMs = raw['display_time_ms'] as int,
@@ -49,7 +55,8 @@ class _Config {
         trialCount = raw['trial_count'] as int? ?? 1,
         symbolSet = raw['symbol_set'] as String? ?? 'pictures',
         chunkSize = raw['chunk_size'] as int? ?? 1,
-        caseMode = raw['case_mode'] as String? ?? 'upper';
+        caseMode = raw['case_mode'] as String? ?? 'upper',
+        recallTimeLimitMs = raw['recall_time_limit_ms'] as int?;
 }
 
 enum _Phase { ready, exposure, recall, roundDone }
@@ -84,9 +91,11 @@ class _MemoryRecallRunnerState extends State<MemoryRecallRunner> {
   _Phase _phase = _Phase.ready;
   int _expectedIndex = 0;
   final Set<String> _matchedItemIds = {};
+  final Set<int> _erroredIndices = {};
   String? _wrongFlashItemId;
   Timer? _phaseTimer;
   Timer? _flashTimer;
+  Timer? _recallTimer;
 
   AssessmentRunContext get _run => widget.runContext;
   ModuleIdentity get _identity => moduleIdentity('memory_recall');
@@ -114,6 +123,7 @@ class _MemoryRecallRunnerState extends State<MemoryRecallRunner> {
   void dispose() {
     _phaseTimer?.cancel();
     _flashTimer?.cancel();
+    _recallTimer?.cancel();
     super.dispose();
   }
 
@@ -127,6 +137,7 @@ class _MemoryRecallRunnerState extends State<MemoryRecallRunner> {
     _choices = [..._sequence, ...distractors]..shuffle(_rng);
     _expectedIndex = 0;
     _matchedItemIds.clear();
+    _erroredIndices.clear();
     _wrongFlashItemId = null;
     _revealedCount = 0;
 
@@ -160,6 +171,11 @@ class _MemoryRecallRunnerState extends State<MemoryRecallRunner> {
         } else {
           _run.recorder.record('sequence_hidden');
           setState(() => _phase = _Phase.recall);
+          final limit = _config.recallTimeLimitMs;
+          if (limit != null) {
+            _recallTimer =
+                Timer(Duration(milliseconds: limit), _onRecallTimeout);
+          }
         }
       },
     );
@@ -168,6 +184,7 @@ class _MemoryRecallRunnerState extends State<MemoryRecallRunner> {
   void _onChoiceTap(ContentItem item, TapDownDetails details) {
     if (_phase != _Phase.recall) return;
     if (_matchedItemIds.contains(item.id)) return;
+    if (_expectedIndex >= _sequence.length) return;
 
     final expected = _sequence[_expectedIndex];
     final isCorrect = item.id == expected.id;
@@ -188,21 +205,45 @@ class _MemoryRecallRunnerState extends State<MemoryRecallRunner> {
         _expectedIndex++;
         _wrongFlashItemId = null;
       });
-      if (_expectedIndex >= _sequence.length) {
-        _onRoundComplete();
-      }
     } else {
-      // Gentle feedback; the child retries. Every error stays in the log.
+      // Only the FIRST attempt at each slot is scored — retries can't brute-
+      // force the answer. Show the miss, reveal the correct item, and advance,
+      // so the score measures recall rather than persistence.
       HapticFeedback.heavyImpact();
-      setState(() => _wrongFlashItemId = item.id);
+      setState(() {
+        _wrongFlashItemId = item.id;
+        _erroredIndices.add(_expectedIndex);
+        _expectedIndex++;
+      });
       _flashTimer?.cancel();
       _flashTimer = Timer(const Duration(milliseconds: 450), () {
         if (mounted) setState(() => _wrongFlashItemId = null);
       });
     }
+
+    if (_expectedIndex >= _sequence.length) {
+      _recallTimer?.cancel();
+      _onRoundComplete();
+    }
+  }
+
+  /// Recall clock expired: the remaining slots are scored as misses (bounding
+  /// persistence) and the round ends.
+  void _onRecallTimeout() {
+    if (!mounted || _phase != _Phase.recall) return;
+    for (var i = _expectedIndex; i < _sequence.length; i++) {
+      _run.recorder.record('answer_submitted', {
+        'answer': 'timeout',
+        'is_correct': false,
+      });
+      _erroredIndices.add(i);
+    }
+    setState(() => _expectedIndex = _sequence.length);
+    _onRoundComplete();
   }
 
   void _onRoundComplete() {
+    _recallTimer?.cancel();
     if (_round >= _config.trialCount) {
       _run.onFinished(AssessmentOutcome.completed);
       return;
@@ -242,6 +283,7 @@ class _MemoryRecallRunnerState extends State<MemoryRecallRunner> {
                 sequence: _sequence,
                 choices: _choices,
                 matched: _matchedItemIds,
+                erroredIndices: _erroredIndices,
                 expectedIndex: _expectedIndex,
                 wrongFlashItemId: _wrongFlashItemId,
                 onTapDown: _onChoiceTap,
@@ -435,6 +477,7 @@ class _RecallView extends StatelessWidget {
   final List<ContentItem> sequence;
   final List<ContentItem> choices;
   final Set<String> matched;
+  final Set<int> erroredIndices;
   final int expectedIndex;
   final String? wrongFlashItemId;
   final void Function(ContentItem, TapDownDetails) onTapDown;
@@ -443,6 +486,7 @@ class _RecallView extends StatelessWidget {
     required this.sequence,
     required this.choices,
     required this.matched,
+    required this.erroredIndices,
     required this.expectedIndex,
     required this.wrongFlashItemId,
     required this.onTapDown,
@@ -463,29 +507,37 @@ class _RecallView extends StatelessWidget {
           alignment: WrapAlignment.center,
           children: [
             for (var i = 0; i < sequence.length; i++)
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: i < expectedIndex
-                      ? AppTheme.surfaceHigh
-                      : AppTheme.surface.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color:
-                        i < expectedIndex ? scheme.primary : AppTheme.border,
-                    width: i < expectedIndex ? 2 : 1,
+              Builder(builder: (context) {
+                final resolved = i < expectedIndex;
+                final errored = erroredIndices.contains(i);
+                // Errored slots still reveal the correct item (good pedagogy)
+                // but are tinted so the miss is visible, not hidden.
+                final borderColor = errored
+                    ? AppTheme.danger
+                    : resolved
+                        ? scheme.primary
+                        : AppTheme.border;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: resolved
+                        ? AppTheme.surfaceHigh
+                        : AppTheme.surface.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                        color: borderColor, width: resolved ? 2 : 1),
                   ),
-                ),
-                child: Center(
-                  child: i < expectedIndex
-                      ? ItemVisual(item: sequence[i], size: 30)
-                      : Text('?',
-                          style: TextStyle(
-                              fontSize: 22, color: AppTheme.textDim)),
-                ),
-              ),
+                  child: Center(
+                    child: resolved
+                        ? ItemVisual(item: sequence[i], size: 30)
+                        : Text('?',
+                            style: TextStyle(
+                                fontSize: 22, color: AppTheme.textDim)),
+                  ),
+                );
+              }),
           ],
         ),
         const SizedBox(height: 20),

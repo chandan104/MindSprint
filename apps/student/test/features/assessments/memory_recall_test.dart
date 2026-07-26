@@ -216,7 +216,8 @@ void main() {
     expect(taps.every((t) => t.payload['is_correct'] == true), isTrue);
   });
 
-  testWidgets('a wrong tap is recorded as incorrect and does not advance',
+  testWidgets(
+      'only the first tap per slot is scored: a wrong tap advances, no retry',
       (tester) async {
     await pumpApp(tester);
     await playThroughDisplay(tester);
@@ -225,24 +226,92 @@ void main() {
     final sequenceIds = (events.first.payload['sequence'] as List)
         .map((e) => (e as Map)['item_id'] as String)
         .toList();
-    final wrongItem = _items.firstWhere((i) => i.id != sequenceIds.first);
+    // A distractor never in the sequence → wrong for slot 0.
+    final wrongItem = _items.firstWhere((i) => !sequenceIds.contains(i.id));
 
+    // Wrong first tap on slot 0 is the scored response; it advances to slot 1
+    // (no brute-forcing the same slot) but does not finish the 2-slot round.
     await tester.tap(find.byKey(ValueKey('choice-${wrongItem.id}')));
     await tester.pump(const Duration(milliseconds: 500));
-
-    expect(outcome, isNull, reason: 'wrong tap must not complete anything');
-    final taps = (await allEvents())
+    expect(outcome, isNull);
+    var taps = (await allEvents())
         .where((e) => e.eventType == 'tap_registered')
         .toList();
     expect(taps.single.payload['is_correct'], false);
     expect(taps.single.payload['item_id'], wrongItem.id);
 
-    // Recovery: correct taps still finish the run.
-    for (final id in sequenceIds) {
-      await tester.tap(find.byKey(ValueKey('choice-$id')));
-      await tester.pump(const Duration(milliseconds: 250));
-    }
+    // Slot 1: a correct tap finishes the round — slot 0 is never re-attempted.
+    await tester.tap(find.byKey(ValueKey('choice-${sequenceIds[1]}')));
+    await tester.pump(const Duration(milliseconds: 250));
     expect(outcome, AssessmentOutcome.completed);
+
+    taps = (await allEvents())
+        .where((e) => e.eventType == 'tap_registered')
+        .toList();
+    expect(taps.length, 2, reason: 'exactly one scored tap per slot');
+    expect(taps[0].payload['is_correct'], false);
+    expect(taps[1].payload['is_correct'], true);
+  });
+
+  testWidgets('recall timeout scores the unanswered slots as misses',
+      (tester) async {
+    const timedLevel = AssessmentLevel(
+      levelId: 'l3',
+      levelVersionId: 'lv3',
+      version: 1,
+      moduleKey: 'memory_recall',
+      name: 'Timed',
+      difficulty: 'easy',
+      config: {
+        'category_key': 'animals',
+        'sequence_length': 2,
+        'display_time_ms': 300,
+        'inter_item_gap_ms': 100,
+        'choice_grid_size': 4,
+        'recall_time_limit_ms': 1000,
+      },
+    );
+    await tester.binding.setSurfaceSize(const Size(900, 1500));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: MemoryRecallRunner(
+          runContext: AssessmentRunContext(
+            level: timedLevel,
+            items: _items,
+            recorder: recorder,
+            timing: timing,
+            onFinished: (o) => outcome = o,
+          ),
+          random: Random(42),
+        ),
+      ),
+    ));
+
+    await tester.tap(find.text('Start'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(); // recall phase begins, recall timer armed
+
+    final ids = (await allEvents())
+        .firstWhere((e) => e.eventType == 'sequence_display_started')
+        .payload['sequence'] as List;
+    final firstId = (ids.first as Map)['item_id'] as String;
+
+    // Answer slot 0, then let the recall clock expire on slot 1.
+    await tester.tap(find.byKey(ValueKey('choice-$firstId')));
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 1100)); // timeout fires
+    await tester.pump();
+
+    expect(outcome, AssessmentOutcome.completed);
+    final answers = (await allEvents())
+        .where((e) => e.eventType == 'answer_submitted')
+        .toList();
+    expect(answers.length, 1, reason: 'one remaining slot scored as a miss');
+    expect(answers.single.payload['answer'], 'timeout');
+    expect(answers.single.payload['is_correct'], false);
   });
 
   testWidgets('tap timestamps are strictly increasing', (tester) async {

@@ -116,3 +116,38 @@ run — still validates; no metric change.
 
 ⚠ **interpretation:** post-change accuracy reflects multi-rule reasoning and a
 25% (not 33%) guess floor; not directly comparable to pre-change scores.
+
+### #5 Memory Recall — measures memory, not persistence
+**Problem:** recall was self-paced with **unlimited free retries** — a wrong tap
+only flashed and the child kept guessing until right, so the round always ended
+with every slot correct and "accuracy" really measured *how many wrong guesses
+before brute-forcing it*, i.e. persistence, not recall.
+
+**Fix (gameplay — the metric formula is unchanged, so both engines and every
+prior fixture are byte-for-byte stable):**
+- **First tap per slot is the scored response.** A wrong first tap is recorded
+  as that slot's error, the correct item is revealed, and the round advances —
+  no re-attempts. `correct_count / sequence_length` is now a true recall
+  accuracy (partial credit per position).
+- **Optional recall timeout** (`recall_time_limit_ms`, additive/null-safe):
+  when set, remaining slots are scored as misses on expiry, bounding a stuck
+  child's persistence. Omitted = self-paced (young/Easy tiers).
+- Errored slots are tinted so a miss is visible in-play; the correct item is
+  still shown (good pedagogy).
+
+**Why no metric-engine change:** the shared `accuracy = correct/(correct+error)`
+already does the right thing once the *data* carries one scored response per
+slot. New fixture `memory_recall_firsttap.json` + pgTAP `14` lock this in on
+both engines; the original `memory_recall_basic.json` (retry-style events) still
+reproduces exactly — proving backward compatibility.
+
+**Not retrofitted:** `recall_time_limit_ms` is left off existing hosted levels
+on purpose — `level_versions` are immutable and retrofitting would rewrite the
+meaning of past sessions. It is opt-in for future/new levels.
+
+⚠ **interpretation:** Memory Recall accuracy will typically **fall** versus
+history (brute-force retries no longer inflate it) and now reflects genuine
+recall. Historical trend lines cross a break at this change.
+
+**Follow-up (deferred):** adaptive span (grow the sequence until the child
+fails) would turn accuracy into a true span estimate — a larger redesign.

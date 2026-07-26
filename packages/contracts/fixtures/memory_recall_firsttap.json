@@ -1,0 +1,43 @@
+{
+  "description": "Memory Recall with first-tap-per-slot scoring: a 3-item sequence where slot 2's FIRST tap is wrong (tiger) and the round advances with no retry (anti-brute-force). accuracy = 2 correct / 3 slots. Both the Dart provisional engine and the SQL canonical engine must reproduce expected_metrics_v1 exactly — the events use one scored response per slot, exactly what the balanced gameplay now emits.",
+  "expected_metrics_v1": {
+    "total_time_ms": 9000,
+    "reaction_time_ms": 5500,
+    "recall_time_ms": 1000,
+    "decision_times_ms": [1000, 1500],
+    "hesitation_count": 0,
+    "total_idle_time_ms": 0,
+    "longest_pause_ms": 1500,
+    "correct_count": 2,
+    "error_count": 1,
+    "accuracy": 0.6666666666666666,
+    "median_decision_ms": 1250,
+    "fastest_decision_ms": 1000,
+    "slowest_decision_ms": 1500
+  },
+  "module_key": "memory_recall",
+  "level_config": {
+    "category_key": "animals",
+    "sequence_length": 3,
+    "display_time_ms": 1500,
+    "inter_item_gap_ms": 500,
+    "choice_grid_size": 6,
+    "recall_time_limit_ms": 20000
+  },
+  "events": [
+    { "seq": 1, "t_ms": 0, "event_type": "session_started", "payload": {} },
+    { "seq": 2, "t_ms": 500, "event_type": "sequence_display_started", "payload": { "sequence": [
+      { "item_id": "cat", "label": "Cat" },
+      { "item_id": "dog", "label": "Dog" },
+      { "item_id": "lion", "label": "Lion" }
+    ] } },
+    { "seq": 3, "t_ms": 500, "event_type": "item_displayed", "payload": { "item_id": "cat", "label": "Cat", "position_index": 0 } },
+    { "seq": 4, "t_ms": 2000, "event_type": "item_displayed", "payload": { "item_id": "dog", "label": "Dog", "position_index": 1 } },
+    { "seq": 5, "t_ms": 3500, "event_type": "item_displayed", "payload": { "item_id": "lion", "label": "Lion", "position_index": 2 } },
+    { "seq": 6, "t_ms": 5000, "event_type": "sequence_hidden", "payload": {} },
+    { "seq": 7, "t_ms": 6000, "event_type": "tap_registered", "payload": { "target_kind": "choice", "item_id": "cat", "label": "Cat", "is_correct": true, "x": 120.0, "y": 340.0 } },
+    { "seq": 8, "t_ms": 7000, "event_type": "tap_registered", "payload": { "target_kind": "choice", "item_id": "tiger", "label": "Tiger", "is_correct": false, "x": 260.0, "y": 341.0 } },
+    { "seq": 9, "t_ms": 8500, "event_type": "tap_registered", "payload": { "target_kind": "choice", "item_id": "lion", "label": "Lion", "is_correct": true, "x": 320.0, "y": 339.0 } },
+    { "seq": 10, "t_ms": 9000, "event_type": "session_completed", "payload": {} }
+  ]
+}
