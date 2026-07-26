@@ -103,7 +103,8 @@ insert into public.levels (id, module_key, name, difficulty, difficulty_rank) va
   ('00000000-0000-4000-8000-000000000415', 'visual_search', 'Find the Shape — Hard', 'hard', 1),
   ('00000000-0000-4000-8000-000000000416', 'sequence_logic', 'Order the Animals — Easy', 'easy', 1),
   ('00000000-0000-4000-8000-000000000417', 'sequence_logic', 'Order the Fruits — Medium', 'medium', 1),
-  ('00000000-0000-4000-8000-000000000418', 'sequence_logic', 'Order the Shapes — Hard', 'hard', 1);
+  ('00000000-0000-4000-8000-000000000418', 'sequence_logic', 'Order the Shapes — Hard', 'hard', 1),
+  ('00000000-0000-4000-8000-000000000420', 'math_speed', 'Times & Division — Extreme', 'hard', 1);
 
 insert into public.level_versions (level_id, version, config) values
   -- Memory Recall: longer sequences, shorter display, bigger grids, more
@@ -121,6 +122,8 @@ insert into public.level_versions (level_id, version, config) values
    '{"operations": ["add", "sub"], "question_count": 10, "operand_min": 1, "operand_max": 20, "time_limit_ms_per_question": 15000}'),
   ('00000000-0000-4000-8000-000000000406', 1,
    '{"operations": ["add", "sub", "mul"], "question_count": 12, "operand_min": 2, "operand_max": 12, "time_limit_ms_per_question": 10000}'),
+  ('00000000-0000-4000-8000-000000000420', 1,
+   '{"operations": ["mul", "div"], "question_count": 12, "operand_min": 3, "operand_max": 15, "time_limit_ms_per_question": 8000}'),
   -- Focus Tap: more stimuli, rarer targets, faster stream as tiers rise
   ('00000000-0000-4000-8000-000000000407', 1,
    '{"category_key": "animals", "stimulus_count": 15, "target_ratio": 0.5, "display_time_ms": 2000, "inter_stimulus_gap_ms": 800}'),

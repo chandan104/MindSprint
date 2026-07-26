@@ -71,6 +71,21 @@ void main() {
       }
     });
 
+    test('offers plausible miscalculation foils, not only ±1..3 near-misses',
+        () {
+      // Multiplication foils include adjacent times-table rows, which sit far
+      // from the answer — proving options can't be eliminated by estimation.
+      final generator = MathQuestionGenerator(
+          operations: ['mul'], operandMin: 4, operandMax: 9, random: Random(5));
+      var sawFarFoil = 0;
+      for (var i = 0; i < 200; i++) {
+        final q = generator.next();
+        if (q.options.any((o) => (o - q.answer).abs() >= 4)) sawFarFoil++;
+      }
+      expect(sawFarFoil, greaterThan(150),
+          reason: 'most multiplication rounds should carry a far miscalc foil');
+    });
+
     test('deterministic under a seeded Random', () {
       MathQuestion gen(int seed) => MathQuestionGenerator(
               operations: ['add'],

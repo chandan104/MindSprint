@@ -72,3 +72,24 @@ validates — proving backward compatibility.
 rule induction and is **not directly comparable** to pre-change scores, which
 were inflated by the always-final blank and rhythm-solvable distractors. Trend
 lines spanning the change should be read with this break in mind.
+
+### #3 Math Speed — distractors model real miscalculations
+**Problem:** distractors were uniform ±1..3 near-misses, so options could be
+eliminated by rough estimation without computing; multiplication/division had no
+error-pattern foils; the division operation (generator-supported) was unused and
+there was no Extreme tier.
+
+**Fix (generator-only — no event/metric/fixture change):** distractors are now
+the specific wrong answers a child produces by mis-applying the operation —
+place-value slip (±10), adjacent times-table rows (`a×(b±1)`, `(a±1)×b`),
+off-by-one, and wrong-operation results — padded with near-misses only if that
+pool is short. Invariants preserved (answer present once, distinct, ≥0, exactly
+`optionCount`). New **Extreme** level (migration `…004`, additive/idempotent):
+`mul`+exact-`div`, operands 3–15, 8s clock.
+
+**Drift guards:** untouched (pure generation change). Existing math fixture and
+both engines unaffected.
+
+⚠ **interpretation:** Math Speed accuracy at a given level may **drop** versus
+history because guessing is now harder — the score is a truer measure of
+fact fluency. Reaction/decision-time metrics are unaffected.
