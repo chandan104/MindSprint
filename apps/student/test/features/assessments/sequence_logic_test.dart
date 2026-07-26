@@ -61,12 +61,44 @@ void main() {
       }
     });
 
+    test('geometric follows a constant ratio', () {
+      final gen = SeriesGenerator(
+          kinds: ['geometric'], sequenceLength: 4, random: Random(7));
+      for (var i = 0; i < 200; i++) {
+        final q = gen.next();
+        final full = [...q.shown, q.answer];
+        final ratio = full[1] / full[0];
+        for (var j = 1; j < full.length; j++) {
+          expect(full[j] / full[j - 1], closeTo(ratio, 1e-9),
+              reason: 'geometric series must keep a constant ratio');
+        }
+      }
+    });
+
+    test('fibonacci sums the previous two terms', () {
+      final gen = SeriesGenerator(
+          kinds: ['fibonacci'], sequenceLength: 5, random: Random(8));
+      for (var i = 0; i < 200; i++) {
+        final q = gen.next();
+        final full = [...q.shown, q.answer];
+        for (var j = 2; j < full.length; j++) {
+          expect(full[j], full[j - 1] + full[j - 2]);
+        }
+      }
+    });
+
     test('options contain the answer exactly once, distinct, non-negative', () {
       final gen = SeriesGenerator(
-          kinds: ['next_in_series', 'reverse_order'],
+          kinds: [
+            'next_in_series',
+            'reverse_order',
+            'geometric',
+            'fibonacci',
+            'alternating'
+          ],
           sequenceLength: 5,
           random: Random(3));
-      for (var i = 0; i < 300; i++) {
+      for (var i = 0; i < 500; i++) {
         final q = gen.next();
         expect(q.options.length, SeriesGenerator.optionCount);
         expect(q.options.toSet().length, q.options.length);
@@ -141,7 +173,7 @@ void main() {
           events.where((e) => e.eventType == 'question_displayed').toList();
       expect(questions.length, 2);
       expect((questions.first.payload['sequence'] as List).length, 3);
-      expect((questions.first.payload['options'] as List).length, 3);
+      expect((questions.first.payload['options'] as List).length, 4);
       final taps =
           events.where((e) => e.eventType == 'tap_registered').toList();
       expect(taps.every((t) => t.payload['is_correct'] == true), isTrue);

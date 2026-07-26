@@ -104,7 +104,8 @@ insert into public.levels (id, module_key, name, difficulty, difficulty_rank) va
   ('00000000-0000-4000-8000-000000000416', 'sequence_logic', 'Order the Animals — Easy', 'easy', 1),
   ('00000000-0000-4000-8000-000000000417', 'sequence_logic', 'Order the Fruits — Medium', 'medium', 1),
   ('00000000-0000-4000-8000-000000000418', 'sequence_logic', 'Order the Shapes — Hard', 'hard', 1),
-  ('00000000-0000-4000-8000-000000000420', 'math_speed', 'Times & Division — Extreme', 'hard', 1);
+  ('00000000-0000-4000-8000-000000000420', 'math_speed', 'Times & Division — Extreme', 'hard', 1),
+  ('00000000-0000-4000-8000-000000000421', 'sequence_logic', 'Hidden Rules — Extreme', 'hard', 1);
 
 insert into public.level_versions (level_id, version, config) values
   -- Memory Recall: longer sequences, shorter display, bigger grids, more
@@ -151,7 +152,9 @@ insert into public.level_versions (level_id, version, config) values
   ('00000000-0000-4000-8000-000000000417', 1,
    '{"category_key": "fruits", "logic_kinds": ["arrange_order", "next_in_series"], "question_count": 6, "sequence_length": 4, "time_limit_ms_per_question": 30000}'),
   ('00000000-0000-4000-8000-000000000418', 1,
-   '{"category_key": "shapes", "logic_kinds": ["arrange_order", "next_in_series", "reverse_order"], "question_count": 8, "sequence_length": 6, "time_limit_ms_per_question": 20000}');
+   '{"category_key": "shapes", "logic_kinds": ["arrange_order", "next_in_series", "reverse_order"], "question_count": 8, "sequence_length": 6, "time_limit_ms_per_question": 20000}'),
+  ('00000000-0000-4000-8000-000000000421', 1,
+   '{"category_key": "numbers", "logic_kinds": ["geometric", "fibonacci", "alternating"], "question_count": 8, "sequence_length": 5, "time_limit_ms_per_question": 15000}');
 
 -- Platform ops ---------------------------------------------------------------
 

@@ -105,7 +105,8 @@ class _SequenceLogicRunnerState extends State<SequenceLogicRunner> {
     });
 
     _run.recorder.record('question_displayed', {
-      'question_text': 'What comes next? (${question.kind})',
+      // The rule name is no longer leaked — inferring it IS the task.
+      'question_text': 'What comes next?',
       'expected_answer': '${question.answer}',
       'sequence': [
         for (final n in question.shown) {'item_id': 'n$n', 'label': '$n'},

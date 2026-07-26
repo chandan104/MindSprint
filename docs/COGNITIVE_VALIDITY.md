@@ -93,3 +93,26 @@ both engines unaffected.
 ⚠ **interpretation:** Math Speed accuracy at a given level may **drop** versus
 history because guessing is now harder — the score is a truer measure of
 fact fluency. Reaction/decision-time metrics are unaffected.
+
+### #4 Sequence Logic — more than one rule, fewer lucky guesses
+**Problem:** every "kind" reduced to a **constant arithmetic step** (a single
+construct any child solves by spotting the difference); `arrange_order` was
+functionally identical to `next_in_series`. Only **3 options** (33% guess floor)
+and the internal rule name leaked into the prompt.
+
+**Fix (generator + prompt):**
+- New rule families the child must actually infer: **geometric** (×2/×3),
+  **fibonacci** (sum of previous two), **alternating** (two interleaved steps),
+  alongside the existing arithmetic ascending/descending.
+- **4 options** (guess floor 33% → 25%); distractors are rule-relevant errors
+  (counted one term too far, repeated the previous term, wrongly assumed a
+  constant step).
+- Prompt no longer names the rule ("What comes next?").
+- `logic_kinds` enum extended (contract-additive). New **Extreme** level
+  (migration `…005` + seed) uses the non-linear families.
+
+**Drift guards:** the `sequence_logic_basic.json` fixture is a static arithmetic
+run — still validates; no metric change.
+
+⚠ **interpretation:** post-change accuracy reflects multi-rule reasoning and a
+25% (not 33%) guess floor; not directly comparable to pre-change scores.
