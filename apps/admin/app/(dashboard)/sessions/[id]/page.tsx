@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ReliabilityCard } from "@/components/admin/reliability-card";
 import { SessionReplayer } from "@/components/admin/session-replayer";
 import {
   Table,
@@ -82,6 +83,12 @@ export default async function SessionDetailPage({
           </Badge>
         </div>
       </div>
+
+      <ReliabilityCard
+        status={session.status}
+        wasInterrupted={session.was_interrupted}
+        events={events}
+      />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {stats.map((stat) => (
