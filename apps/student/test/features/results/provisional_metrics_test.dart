@@ -48,6 +48,7 @@ void main() {
         expect(m.fastestDecisionMs, expected['fastest_decision_ms']);
         expect(m.slowestDecisionMs, expected['slowest_decision_ms']);
         expect(m.instructionDelayMs, expected['instruction_delay_ms']);
+        expect(m.stroopInterferenceMs, expected['stroop_interference_ms']);
       });
     }
 

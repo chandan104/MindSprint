@@ -231,6 +231,32 @@ describe("deriveReplayState (color_selector fixture)", () => {
   it("completes at the end", () => {
     expect(deriveReplayState(cs, 21100).phase).toBe("complete");
   });
+
+  it("exposes Stroop congruency when the trial is tagged", () => {
+    const stroop: ReplayEvent[] = [
+      { seq: 1, t_ms: 0, event_type: "session_started", payload: {} },
+      {
+        seq: 2,
+        t_ms: 300,
+        event_type: "instruction_shown",
+        payload: { instruction_text: "Tap the WORD Green", instruction_kind: "word" },
+      },
+      {
+        seq: 3,
+        t_ms: 1500,
+        event_type: "question_displayed",
+        payload: {
+          question_text: "Tap the WORD Green",
+          expected_answer: "green",
+          congruent: false,
+          options: [{ item_id: "green", label: "Green" }],
+        },
+      },
+    ];
+    const state = deriveReplayState(stroop, 1600);
+    expect(state.phase).toBe("question");
+    expect(state.congruent).toBe(false);
+  });
 });
 
 describe("deriveReplayState (pattern puzzle with an interior blank)", () => {

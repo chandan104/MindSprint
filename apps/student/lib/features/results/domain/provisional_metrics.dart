@@ -40,6 +40,11 @@ class ProvisionalMetrics {
   /// instruction-reading delay); null for modules without instructions.
   final int? instructionDelayMs;
 
+  /// Stroop interference: mean reaction time on incongruent trials − mean on
+  /// congruent trials (correct responses only), in ms. Null unless the session
+  /// has congruency-tagged trials of both kinds. Higher = more interference.
+  final int? stroopInterferenceMs;
+
   /// Gaps between consecutive answer taps.
   final List<int> decisionTimesMs;
 
@@ -61,6 +66,7 @@ class ProvisionalMetrics {
     required this.longestPauseMs,
     required this.correctCount,
     required this.errorCount,
+    this.stroopInterferenceMs,
   });
 
   int get totalAnswers => correctCount + errorCount;
@@ -105,6 +111,7 @@ class ProvisionalMetrics {
         'fastest_decision_ms': fastestDecisionMs,
         'slowest_decision_ms': slowestDecisionMs,
         'instruction_delay_ms': instructionDelayMs,
+        'stroop_interference_ms': stroopInterferenceMs,
       };
 }
 
@@ -126,6 +133,7 @@ ProvisionalMetrics computeProvisionalMetrics(List<MetricEvent> events) {
       longestPauseMs: null,
       correctCount: 0,
       errorCount: 0,
+      stroopInterferenceMs: null,
     );
   }
 
@@ -141,9 +149,21 @@ ProvisionalMetrics computeProvisionalMetrics(List<MetricEvent> events) {
   var correct = 0;
   var errors = 0;
 
+  // Stroop interference: pair each congruency-tagged question with its next
+  // tap's reaction time (question → tap), split by congruency, correct only.
+  int? currentQuestionT;
+  bool? currentCongruent;
+  final congruentRts = <int>[];
+  final incongruentRts = <int>[];
+
   for (final event in events) {
     if (_stimulusEvents.contains(event.eventType)) {
       firstStimulusT ??= event.tMs;
+      if (event.eventType == 'question_displayed') {
+        currentQuestionT = event.tMs;
+        final c = event.payload['congruent'];
+        currentCongruent = c is bool ? c : null;
+      }
     } else if (event.eventType == 'instruction_shown') {
       instructionT ??= event.tMs;
     } else if (event.eventType == 'sequence_hidden') {
@@ -159,11 +179,30 @@ ProvisionalMetrics computeProvisionalMetrics(List<MetricEvent> events) {
       final isCorrect = event.payload['is_correct'];
       if (isCorrect == true) correct++;
       if (isCorrect == false) errors++;
+      if (currentCongruent != null &&
+          currentQuestionT != null &&
+          isCorrect == true) {
+        final rt = event.tMs - currentQuestionT;
+        (currentCongruent ? congruentRts : incongruentRts).add(rt);
+      }
+      // Each response consumes its question's congruency tag.
+      currentCongruent = null;
+      currentQuestionT = null;
     } else if (event.eventType == 'answer_submitted') {
       final isCorrect = event.payload['is_correct'];
       if (isCorrect == true) correct++;
       if (isCorrect == false) errors++;
+      currentCongruent = null;
+      currentQuestionT = null;
     }
+  }
+
+  int? interference;
+  if (congruentRts.isNotEmpty && incongruentRts.isNotEmpty) {
+    final meanCong = congruentRts.reduce((a, b) => a + b) / congruentRts.length;
+    final meanIncong =
+        incongruentRts.reduce((a, b) => a + b) / incongruentRts.length;
+    interference = (meanIncong - meanCong).round();
   }
 
   final decisions = <int>[];
@@ -193,5 +232,6 @@ ProvisionalMetrics computeProvisionalMetrics(List<MetricEvent> events) {
     longestPauseMs: decisions.isEmpty ? null : decisions.reduce((a, b) => a > b ? a : b),
     correctCount: correct,
     errorCount: errors,
+    stroopInterferenceMs: interference,
   );
 }

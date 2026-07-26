@@ -62,11 +62,17 @@ class _Round {
   final String targetId; // the correct option id
   final List<_Tile> tiles;
 
+  /// Stroop congruency of the target tile (word == ink). Null on non-Stroop
+  /// rounds. A controlled mix of congruent and incongruent trials is what makes
+  /// interference (incongruent RT − congruent RT) measurable.
+  final bool? congruent;
+
   const _Round({
     required this.instructionText,
     required this.instructionKind,
     required this.targetId,
     required this.tiles,
+    this.congruent,
   });
 }
 
@@ -95,7 +101,7 @@ class ColorSelectorRunner extends StatefulWidget {
     super.key,
     required this.runContext,
     this.random,
-    this.roundCount = 5,
+    this.roundCount = 8, // more rounds → a more reliable interference estimate
   });
 
   @override
@@ -141,38 +147,62 @@ class _ColorSelectorRunnerState extends State<ColorSelectorRunner> {
     final mode = _config.instructionModes[
         _rng.nextInt(_config.instructionModes.length)];
 
-    final tiles = <_Tile>[];
-    if (_config.stroop) {
-      // Each tile is a colour WORD printed in a different ink. Matching by
-      // WORD (say the word) vs INK (the colour) is what the instruction picks.
-      for (final c in chosen) {
-        final ink = (chosen.where((x) => x.id != c.id).toList()
-              ..shuffle(_rng))
-            .first;
-        // id encodes both facets: word=c, ink=ink. For a 'word' instruction
-        // the correct tile is the one whose WORD is the target; for 'colour'
-        // the one whose INK is the target.
-        tiles.add(_Tile(id: mode == 'word' ? c.id : ink.id, word: c.label, ink: ink.color));
-      }
-      // Ensure exactly one tile matches the target id.
-      final matches = tiles.where((t) => t.id == target.id).length;
-      if (matches != 1) {
-        // Fallback: force the first tile to be the unique match.
-        tiles[0] = _Tile(
-            id: target.id,
-            word: mode == 'word' ? target.label : chosen.firstWhere((c) => c.id != target.id).label,
-            ink: mode == 'word'
-                ? chosen.firstWhere((c) => c.id != target.id).color
-                : target.color);
-      }
-    } else {
-      for (final c in chosen) {
-        tiles.add(_Tile(id: c.id, ink: c.color));
-      }
+    if (!_config.stroop) {
+      final tiles = [for (final c in chosen) _Tile(id: c.id, ink: c.color)]
+        ..shuffle(_rng);
+      return _Round(
+        instructionText: 'Tap the ${target.label.toUpperCase()} colour',
+        instructionKind: mode,
+        targetId: target.id,
+        tiles: tiles,
+      );
+    }
+    return _buildStroopRound(chosen, target, mode);
+  }
+
+  /// Stroop round: each tile is a colour WORD printed in an ink. The target
+  /// tile is congruent (word == ink) on ~1/3 of trials so the metrics engine
+  /// can measure interference = incongruent RT − congruent RT. Exactly one tile
+  /// matches the target under the instruction (word id, or ink id).
+  _Round _buildStroopRound(List<_Colour> chosen, _Colour target, String mode) {
+    final congruent = _rng.nextInt(3) == 0;
+    final nonTarget = chosen.where((c) => c.id != target.id).toList();
+
+    // The word shown on the target tile.
+    final targetWord = (mode == 'word' || congruent)
+        ? target
+        : nonTarget[_rng.nextInt(nonTarget.length)];
+    // Its ink: colour mode requires the target's ink; word mode uses the
+    // target's colour only when congruent, otherwise a conflicting ink.
+    final Color targetInk = (mode == 'colour')
+        ? target.color
+        : (congruent ? target.color : nonTarget[_rng.nextInt(nonTarget.length)].color);
+
+    final tiles = <_Tile>[
+      _Tile(
+        id: mode == 'word' ? targetWord.id : target.id,
+        word: targetWord.label,
+        ink: targetInk,
+      ),
+    ];
+
+    // One distractor tile per remaining word, inked to a NON-target colour that
+    // differs from its own word (Stroop conflict) so its match id != target.
+    for (final w in chosen.where((c) => c.id != targetWord.id)) {
+      final inkChoices = chosen
+          .where((x) => x.id != target.id && x.id != w.id)
+          .toList();
+      final ink = (inkChoices.isEmpty ? nonTarget : inkChoices)..shuffle(_rng);
+      final chosenInk = ink.first;
+      tiles.add(_Tile(
+        id: mode == 'word' ? w.id : chosenInk.id,
+        word: w.label,
+        ink: chosenInk.color,
+      ));
     }
     tiles.shuffle(_rng);
 
-    final instruction = _config.stroop && mode == 'word'
+    final instruction = mode == 'word'
         ? 'Tap the WORD ${target.label}'
         : 'Tap the ${target.label.toUpperCase()} colour';
 
@@ -181,6 +211,7 @@ class _ColorSelectorRunnerState extends State<ColorSelectorRunner> {
       instructionKind: mode,
       targetId: target.id,
       tiles: tiles,
+      congruent: congruent,
     );
   }
 
@@ -212,6 +243,7 @@ class _ColorSelectorRunnerState extends State<ColorSelectorRunner> {
     _run.recorder.record('question_displayed', {
       'question_text': round.instructionText,
       'expected_answer': round.targetId,
+      if (round.congruent != null) 'congruent': round.congruent,
       'options': [
         for (final t in round.tiles)
           {'item_id': t.id, 'label': t.word ?? t.id},

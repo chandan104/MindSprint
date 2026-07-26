@@ -174,3 +174,33 @@ both engines are unaffected. New test asserts no back-to-back targets.
 
 ⚠ **interpretation:** minor — reaction-time distributions get slightly cleaner
 (no rhythmic pre-emption); accuracy semantics are unchanged.
+
+### #7 Colour Selector — controlled congruency + interference metric
+**Problem:** every Stroop tile was incongruent (word ≠ ink), so there were no
+congruent trials to compare against — the defining Stroop measure (interference)
+couldn't be computed. Only 5 rounds gave a noisy estimate.
+
+**Fix:**
+- **Controlled congruency:** ~1/3 of Stroop trials are now congruent (target
+  word == ink); each `question_displayed` is tagged with `congruent`
+  (contract-additive boolean). Round construction guarantees exactly one target
+  tile in both word- and colour-instruction modes.
+- **New canonical metric `stroop_interference_ms`** = mean reaction time on
+  incongruent trials − mean on congruent trials (correct responses only), in
+  both engines (Dart provisional + SQL `compute_session_metrics`, migration
+  `…006`), additive & null-safe (null unless both trial kinds exist).
+- **8 rounds** (was 5) for a more reliable estimate.
+- Replay reducer exposes `congruent`; new fixture `color_selector_stroop.json`
+  + pgTAP `15` drift-guard the metric (interference = 350 in the fixture).
+
+**Drift guards:** additive/null-safe — `jsonb_strip_nulls` drops the metric for
+every non-Stroop session, so all prior fixtures reproduce unchanged.
+
+⚠ **interpretation:** a new metric with no history; accuracy/RT semantics of
+existing Colour Selector data are unchanged.
+
+## Status
+All seven backlog items (#1–#7) implemented. Systemic follow-ups (#8 audio/icon
+prompts for the reading confound; #9 uniform ≥4 options) remain as future
+milestones, plus adaptive Memory Recall span and feature-based Visual Search
+similarity noted above.

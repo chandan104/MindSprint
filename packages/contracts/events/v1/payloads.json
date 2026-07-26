@@ -104,6 +104,7 @@
           }
         },
         "blank_index": { "type": "integer", "minimum": 0 },
+        "congruent": { "type": "boolean" },
         "options": {
           "type": "array",
           "items": {

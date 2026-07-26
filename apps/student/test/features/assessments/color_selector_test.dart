@@ -162,6 +162,32 @@ void main() {
         2);
   });
 
+  testWidgets('Stroop rounds tag congruency and produce both kinds',
+      (tester) async {
+    // Over many rounds the controlled ~1/3 congruent mix must yield both a
+    // congruent and an incongruent trial, each tagged on question_displayed.
+    await pumpApp(tester, stroop: true, modes: ['word'], roundCount: 20);
+    for (var i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 1200));
+      final q = (await allEvents())
+          .lastWhere((e) => e.eventType == 'question_displayed');
+      final expected = q.payload['expected_answer'] as String;
+      final options = (q.payload['options'] as List).cast<Map>();
+      final index = options.indexWhere((o) => o['item_id'] == expected);
+      await tester.tap(find.byKey(ValueKey('colour-$index')));
+      await tester.pump(const Duration(milliseconds: 700));
+      await tester.pump();
+    }
+    final flags = (await allEvents())
+        .where((e) => e.eventType == 'question_displayed')
+        .map((e) => e.payload['congruent'])
+        .toList();
+    expect(flags.every((f) => f is bool), isTrue,
+        reason: 'every Stroop trial is tagged with congruency');
+    expect(flags.contains(true), isTrue);
+    expect(flags.contains(false), isTrue);
+  });
+
   testWidgets('Stroop word instruction matches by the word, not the ink',
       (tester) async {
     await pumpApp(tester, stroop: true, modes: ['word']);

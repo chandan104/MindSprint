@@ -1,0 +1,42 @@
+{
+  "description": "Colour Selector Stroop with controlled congruency: 4 rounds (congruent, incongruent, incongruent, congruent), each an instruction_shown then a question_displayed tagged with `congruent`, then one correct tap. stroop_interference_ms = mean incongruent RT (900,1100 → 1000) − mean congruent RT (600,700 → 650) = 350. Both the Dart provisional engine and the SQL canonical engine must reproduce expected_metrics_v1 exactly.",
+  "expected_metrics_v1": {
+    "total_time_ms": 7500,
+    "reaction_time_ms": 600,
+    "instruction_delay_ms": 900,
+    "stroop_interference_ms": 350,
+    "decision_times_ms": [1800, 2200, 1600],
+    "hesitation_count": 0,
+    "total_idle_time_ms": 0,
+    "longest_pause_ms": 2200,
+    "correct_count": 4,
+    "error_count": 0,
+    "accuracy": 1.0,
+    "median_decision_ms": 1800,
+    "fastest_decision_ms": 1600,
+    "slowest_decision_ms": 2200
+  },
+  "module_key": "color_selector",
+  "level_config": {
+    "colour_count": 4,
+    "time_limit_ms_per_round": 5000,
+    "stroop": true,
+    "instruction_modes": ["word"]
+  },
+  "events": [
+    { "seq": 1, "t_ms": 0, "event_type": "session_started", "payload": {} },
+    { "seq": 2, "t_ms": 100, "event_type": "instruction_shown", "payload": { "instruction_text": "Tap the WORD Green", "instruction_kind": "word" } },
+    { "seq": 3, "t_ms": 1000, "event_type": "question_displayed", "payload": { "question_text": "Tap the WORD Green", "expected_answer": "green", "congruent": true, "options": [{ "item_id": "green", "label": "Green" }, { "item_id": "red", "label": "Red" }, { "item_id": "blue", "label": "Blue" }, { "item_id": "yellow", "label": "Yellow" }] } },
+    { "seq": 4, "t_ms": 1600, "event_type": "tap_registered", "payload": { "target_kind": "choice", "item_id": "green", "label": "Green", "is_correct": true, "x": 120.0, "y": 500.0 } },
+    { "seq": 5, "t_ms": 2000, "event_type": "instruction_shown", "payload": { "instruction_text": "Tap the WORD Red", "instruction_kind": "word" } },
+    { "seq": 6, "t_ms": 2500, "event_type": "question_displayed", "payload": { "question_text": "Tap the WORD Red", "expected_answer": "red", "congruent": false, "options": [{ "item_id": "green", "label": "Green" }, { "item_id": "red", "label": "Red" }, { "item_id": "blue", "label": "Blue" }, { "item_id": "yellow", "label": "Yellow" }] } },
+    { "seq": 7, "t_ms": 3400, "event_type": "tap_registered", "payload": { "target_kind": "choice", "item_id": "red", "label": "Red", "is_correct": true, "x": 300.0, "y": 500.0 } },
+    { "seq": 8, "t_ms": 4000, "event_type": "instruction_shown", "payload": { "instruction_text": "Tap the WORD Blue", "instruction_kind": "word" } },
+    { "seq": 9, "t_ms": 4500, "event_type": "question_displayed", "payload": { "question_text": "Tap the WORD Blue", "expected_answer": "blue", "congruent": false, "options": [{ "item_id": "green", "label": "Green" }, { "item_id": "red", "label": "Red" }, { "item_id": "blue", "label": "Blue" }, { "item_id": "yellow", "label": "Yellow" }] } },
+    { "seq": 10, "t_ms": 5600, "event_type": "tap_registered", "payload": { "target_kind": "choice", "item_id": "blue", "label": "Blue", "is_correct": true, "x": 120.0, "y": 640.0 } },
+    { "seq": 11, "t_ms": 6000, "event_type": "instruction_shown", "payload": { "instruction_text": "Tap the WORD Yellow", "instruction_kind": "word" } },
+    { "seq": 12, "t_ms": 6500, "event_type": "question_displayed", "payload": { "question_text": "Tap the WORD Yellow", "expected_answer": "yellow", "congruent": true, "options": [{ "item_id": "green", "label": "Green" }, { "item_id": "red", "label": "Red" }, { "item_id": "blue", "label": "Blue" }, { "item_id": "yellow", "label": "Yellow" }] } },
+    { "seq": 13, "t_ms": 7200, "event_type": "tap_registered", "payload": { "target_kind": "choice", "item_id": "yellow", "label": "Yellow", "is_correct": true, "x": 300.0, "y": 640.0 } },
+    { "seq": 14, "t_ms": 7500, "event_type": "session_completed", "payload": {} }
+  ]
+}

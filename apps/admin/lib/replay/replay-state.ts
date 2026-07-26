@@ -51,6 +51,8 @@ export type ReplayState = {
   } | null;
   /** Position of the hidden slot in `sequence` (pattern puzzles); null if none. */
   blankIndex: number | null;
+  /** Stroop congruency of the current trial (Colour Selector); null if untagged. */
+  congruent: boolean | null;
   /** True when >3000ms have passed in an answer phase with no input. */
   isHesitating: boolean;
   lastEventType: string | null;
@@ -68,6 +70,7 @@ const initialState: ReplayState = {
   matchedIds: [],
   question: null,
   blankIndex: null,
+  congruent: null,
   instructionText: null,
   currentStimulus: null,
   isHesitating: false,
@@ -146,6 +149,8 @@ export function deriveReplayState(
         state.revealedCount = state.sequence.length;
         const blank = event.payload["blank_index"];
         state.blankIndex = typeof blank === "number" ? blank : null;
+        const congruent = event.payload["congruent"];
+        state.congruent = typeof congruent === "boolean" ? congruent : null;
         state.taps = [];
         state.phase = "question";
         lastInputMarkMs = event.t_ms;
