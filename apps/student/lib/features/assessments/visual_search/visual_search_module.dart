@@ -43,12 +43,29 @@ class _Config {
 const String _notPresentId = 'not_present';
 const String _notPresentLabel = 'Not here!';
 
+/// One rendered grid cell. [id] is unique per position (c0, c1, …) so the grid
+/// can be filled to its true configured size with *repeated* distractor items
+/// (categories are small) without id/key collisions — the tap target is the
+/// cell, not the underlying glyph.
+class _Cell {
+  final String id;
+  final ContentItem item;
+  final bool isTarget;
+  const _Cell({required this.id, required this.item, required this.isTarget});
+}
+
 class _Trial {
   final ContentItem target; // the item to search for (shown as the prompt)
   final bool present; // whether target is actually in the grid
-  final List<ContentItem> grid;
+  final List<_Cell> cells;
+  final String expectedId; // target cell id, or _notPresentId
 
-  const _Trial({required this.target, required this.present, required this.grid});
+  const _Trial({
+    required this.target,
+    required this.present,
+    required this.cells,
+    required this.expectedId,
+  });
 }
 
 enum _Phase { ready, trial, betweenTrials }
@@ -101,13 +118,32 @@ class _VisualSearchRunnerState extends State<VisualSearchRunner> {
     final pool = [..._run.items]..shuffle(_rng);
     final present = _rng.nextDouble() < _config.targetPresentRatio;
     final target = pool.first;
-    final gridPool = pool.skip(1).take(_config.gridSize - 1).toList();
-    final grid = present
-        ? ([...gridPool, target]..shuffle(_rng))
-        : (gridPool.length >= _config.gridSize - 1
-            ? gridPool
-            : pool.skip(1).take(_config.gridSize - 1).toList());
-    return _Trial(target: target, present: present, grid: grid);
+    final distractorItems = pool.skip(1).toList();
+    final total = max(2, _config.gridSize);
+
+    // Fill the grid to its TRUE configured size. Categories hold ~8 items, so
+    // distractors are sampled *with repetition* — this realises the crowding /
+    // set-size load the level intends (fixes the silent grid-shrink where a
+    // 25-tile Hard grid rendered only ~8 tiles). Distractor-vs-target visual
+    // similarity (conjunction search) needs per-item feature metadata the
+    // content model doesn't yet carry — tracked as a follow-up.
+    final slots = <ContentItem>[];
+    final distractorSlots = present ? total - 1 : total;
+    for (var i = 0; i < distractorSlots; i++) {
+      slots.add(distractorItems[_rng.nextInt(distractorItems.length)]);
+    }
+    if (present) slots.add(target);
+    slots.shuffle(_rng);
+
+    var expectedId = _notPresentId;
+    final cells = <_Cell>[
+      for (var i = 0; i < slots.length; i++)
+        _Cell(id: 'c$i', item: slots[i], isTarget: present && identical(slots[i], target)),
+    ];
+    for (final c in cells) {
+      if (c.isTarget) expectedId = c.id;
+    }
+    return _Trial(target: target, present: present, cells: cells, expectedId: expectedId);
   }
 
   void _nextTrial() {
@@ -126,9 +162,10 @@ class _VisualSearchRunnerState extends State<VisualSearchRunner> {
 
     _run.recorder.record('question_displayed', {
       'question_text': 'Find the ${trial.target.label}!',
-      'expected_answer': trial.present ? trial.target.label : _notPresentId,
+      'expected_answer': trial.expectedId,
       'options': [
-        for (final item in trial.grid) {'item_id': item.id, 'label': item.label},
+        for (final cell in trial.cells)
+          {'item_id': cell.id, 'label': cell.item.label},
         {'item_id': _notPresentId, 'label': _notPresentLabel},
       ],
     });
@@ -145,17 +182,15 @@ class _VisualSearchRunnerState extends State<VisualSearchRunner> {
     });
   }
 
-  void _onTap(String itemId, String label, TapDownDetails details) {
+  void _onTap(String cellId, String label, TapDownDetails details) {
     if (_phase != _Phase.trial || _selectedId != null) return;
     final trial = _trial!;
-    final isCorrect = trial.present
-        ? itemId == trial.target.id
-        : itemId == _notPresentId;
+    final isCorrect = cellId == trial.expectedId;
 
     _trialTimer?.cancel();
     _run.recorder.record('tap_registered', {
       'target_kind': 'choice',
-      'item_id': itemId,
+      'item_id': cellId,
       'label': label,
       'is_correct': isCorrect,
       'x': details.globalPosition.dx,
@@ -167,7 +202,7 @@ class _VisualSearchRunnerState extends State<VisualSearchRunner> {
     } else {
       HapticFeedback.heavyImpact();
     }
-    setState(() => _selectedId = itemId);
+    setState(() => _selectedId = cellId);
     _showFeedbackThenAdvance(correct: isCorrect);
   }
 
@@ -342,23 +377,22 @@ class _TrialView extends StatelessWidget {
           const SizedBox(height: 16),
           Expanded(
             child: GridView.count(
-              crossAxisCount: 3,
+              // Denser grids get more columns so larger set sizes stay legible.
+              crossAxisCount: trial.cells.length > 16 ? 5 : trial.cells.length > 9 ? 4 : 3,
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
               children: [
-                for (final item in trial.grid)
+                for (final cell in trial.cells)
                   _GridTile(
-                    key: ValueKey('cell-${item.id}'),
-                    item: item,
-                    state: !acceptingInput && item.id == selectedId
+                    key: ValueKey('cell-${cell.id}'),
+                    item: cell.item,
+                    state: !acceptingInput && cell.id == selectedId
                         ? (lastCorrect == true ? _TileState.correct : _TileState.wrong)
-                        : !acceptingInput &&
-                                trial.present &&
-                                item.id == trial.target.id
+                        : !acceptingInput && cell.isTarget
                             ? _TileState.reveal
                             : _TileState.idle,
                     onTapDown: acceptingInput
-                        ? (details) => onTap(item.id, item.label, details)
+                        ? (details) => onTap(cell.id, cell.item.label, details)
                         : null,
                   ),
               ],

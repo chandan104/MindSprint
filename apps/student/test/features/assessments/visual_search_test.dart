@@ -55,7 +55,8 @@ void main() {
 
   tearDown(() => recorder.dispose());
 
-  Future<void> pumpApp(WidgetTester tester, {double ratio = 1.0}) async {
+  Future<void> pumpApp(WidgetTester tester,
+      {double ratio = 1.0, int? gridSize}) async {
     await tester.binding.setSurfaceSize(const Size(900, 1500));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final level = AssessmentLevel(
@@ -65,7 +66,11 @@ void main() {
       moduleKey: _level.moduleKey,
       name: _level.name,
       difficulty: _level.difficulty,
-      config: {..._level.config, 'target_present_ratio': ratio},
+      config: {
+        ..._level.config,
+        'target_present_ratio': ratio,
+        if (gridSize != null) 'grid_size': gridSize,
+      },
     );
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
@@ -97,10 +102,8 @@ void main() {
     for (var i = 0; i < 2; i++) {
       final events = await allEvents();
       final q = events.lastWhere((e) => e.eventType == 'question_displayed');
-      final expectedLabel = q.payload['expected_answer'] as String;
-      final options = (q.payload['options'] as List).cast<Map>();
-      final expectedId = options
-          .firstWhere((o) => o['label'] == expectedLabel)['item_id'] as String;
+      // expected_answer is now the unique target CELL id (present trials).
+      final expectedId = q.payload['expected_answer'] as String;
       await tester.tap(find.byKey(ValueKey('cell-$expectedId')));
       await tester.pump(const Duration(milliseconds: 750));
       await tester.pump();
@@ -115,6 +118,25 @@ void main() {
     expect((questions.first.payload['options'] as List).length, 7);
     final taps = events.where((e) => e.eventType == 'tap_registered').toList();
     expect(taps.every((t) => t.payload['is_correct'] == true), isTrue);
+  });
+
+  testWidgets(
+      'grid fills to its configured size even when the category is small',
+      (tester) async {
+    // 6 category items, grid_size 12 → distractors repeat to fill the grid.
+    // Regression for the silent shrink where big grids rendered ~pool-size.
+    await pumpApp(tester, ratio: 1.0, gridSize: 12);
+    await tester.tap(find.text('Start'));
+    await tester.pump();
+
+    final q = (await allEvents())
+        .lastWhere((e) => e.eventType == 'question_displayed');
+    final options = (q.payload['options'] as List).cast<Map>();
+    // 12 grid cells + the "Not here!" sentinel.
+    expect(options.length, 13);
+    // Exactly one cell is the target (its id is the expected answer).
+    final expectedId = q.payload['expected_answer'] as String;
+    expect(options.where((o) => o['item_id'] == expectedId).length, 1);
   });
 
   testWidgets('target-absent trial: tapping "Not here!" is correct',
@@ -168,10 +190,7 @@ void main() {
     expect(miss.single.payload['answer'], 'timeout');
 
     final q2 = events.lastWhere((e) => e.eventType == 'question_displayed');
-    final expectedLabel2 = q2.payload['expected_answer'] as String;
-    final options2 = (q2.payload['options'] as List).cast<Map>();
-    final expectedId2 = options2
-        .firstWhere((o) => o['label'] == expectedLabel2)['item_id'] as String;
+    final expectedId2 = q2.payload['expected_answer'] as String;
     await tester.tap(find.byKey(ValueKey('cell-$expectedId2')));
     await tester.pump(const Duration(milliseconds: 750));
     await tester.pump();
