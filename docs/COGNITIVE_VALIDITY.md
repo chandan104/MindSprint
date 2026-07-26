@@ -151,3 +151,26 @@ recall. Historical trend lines cross a break at this change.
 
 **Follow-up (deferred):** adaptive span (grow the sequence until the child
 fails) would turn accuracy into a true span estimate — a larger redesign.
+
+### #6 Focus Tap — no rhythm, no lucky clusters
+**Problem:** a **fixed** inter-stimulus gap let a child fall into a tapping
+rhythm and hit targets on beat (reaction time then reflects timing, not
+detection); the fully-shuffled plan could place **targets back-to-back**, where
+one rhythmic double-tap scores two hits. (The target frequency ramp — rarer
+targets at higher tiers — is retained: it is a legitimate *vigilance* load, and
+the module's construct is now documented explicitly as sustained selective
+attention / vigilance, not a mixed one.)
+
+**Fix (engine defaults — no config mutation, applies to every existing level):**
+- **ISI jitter**: each gap is the base ± a random jitter (default 40% of the
+  gap, floor 50ms), so stimulus onsets are unpredictable.
+- **Anti-clustering**: targets are distributed into the gaps between distractors
+  so no two are consecutive (falls back to a shuffle only if targets are too
+  dense to separate).
+- Optional `inter_stimulus_jitter_ms` knob added (contract-additive).
+
+**Drift guards:** no metric/schema-of-record change — the attention fixture and
+both engines are unaffected. New test asserts no back-to-back targets.
+
+⚠ **interpretation:** minor — reaction-time distributions get slightly cleaner
+(no rhythmic pre-emption); accuracy semantics are unchanged.

@@ -16,7 +16,13 @@
     "stimulus_count": { "type": "integer", "minimum": 5, "maximum": 60 },
     "target_ratio": { "type": "number", "exclusiveMinimum": 0, "maximum": 0.8 },
     "display_time_ms": { "type": "integer", "minimum": 300, "maximum": 5000 },
-    "inter_stimulus_gap_ms": { "type": "integer", "minimum": 100, "maximum": 3000 }
+    "inter_stimulus_gap_ms": { "type": "integer", "minimum": 100, "maximum": 3000 },
+    "inter_stimulus_jitter_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2000,
+      "description": "Optional random ± jitter added to each inter-stimulus gap (additive). Defeats rhythmic auto-tapping so reaction time reflects genuine detection. Default = 40% of inter_stimulus_gap_ms."
+    }
   },
   "additionalProperties": false
 }

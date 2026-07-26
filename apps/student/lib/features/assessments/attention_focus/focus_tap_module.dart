@@ -33,11 +33,18 @@ class _Config {
   final int displayTimeMs;
   final int interStimulusGapMs;
 
+  /// Random ± jitter on each gap so the stream isn't metronomic — a child can't
+  /// lock into a rhythm and tap on beat; reaction time must reflect genuine
+  /// detection. Defaults to 40% of the base gap when unset.
+  final int interStimulusJitterMs;
+
   _Config(Map<String, Object?> raw)
       : stimulusCount = raw['stimulus_count'] as int,
         targetRatio = (raw['target_ratio'] as num).toDouble(),
         displayTimeMs = raw['display_time_ms'] as int,
-        interStimulusGapMs = raw['inter_stimulus_gap_ms'] as int;
+        interStimulusGapMs = raw['inter_stimulus_gap_ms'] as int,
+        interStimulusJitterMs = raw['inter_stimulus_jitter_ms'] as int? ??
+            ((raw['inter_stimulus_gap_ms'] as int) * 0.4).round();
 }
 
 class _Stimulus {
@@ -93,12 +100,34 @@ class _FocusTapRunnerState extends State<FocusTapRunner> {
     // Guarantee at least one target and one distractor regardless of ratio.
     final targetCount = min(_config.stimulusCount - 1,
         max(1, (_config.stimulusCount * _config.targetRatio).round()));
-    final plan = <_Stimulus>[
-      for (var i = 0; i < targetCount; i++) _Stimulus(_target, true),
+    final targets = [for (var i = 0; i < targetCount; i++) _Stimulus(_target, true)];
+    final fillers = [
       for (var i = 0; i < _config.stimulusCount - targetCount; i++)
         _Stimulus(distractors[_rng.nextInt(distractors.length)], false),
-    ]..shuffle(_rng);
-    _stimuli = plan;
+    ];
+    _stimuli = _arrangeNoAdjacentTargets(targets, fillers);
+  }
+
+  /// Spreads targets into the gaps between distractors so no two targets are
+  /// back-to-back — adjacent targets let a child double-tap on rhythm and land
+  /// two hits, confounding the sustained-attention measure. Falls back to a
+  /// plain shuffle when targets are too dense to separate.
+  List<_Stimulus> _arrangeNoAdjacentTargets(
+      List<_Stimulus> targets, List<_Stimulus> distractors) {
+    final gaps = distractors.length + 1;
+    if (targets.length > gaps) {
+      return [...targets, ...distractors]..shuffle(_rng);
+    }
+    final chosen = (List.generate(gaps, (i) => i)..shuffle(_rng))
+        .take(targets.length)
+        .toSet();
+    final result = <_Stimulus>[];
+    var ti = 0;
+    for (var g = 0; g < gaps; g++) {
+      if (chosen.contains(g)) result.add(targets[ti++]);
+      if (g < distractors.length) result.add(distractors[g]);
+    }
+    return result;
   }
 
   @override
@@ -139,8 +168,16 @@ class _FocusTapRunnerState extends State<FocusTapRunner> {
       });
     }
     setState(() => _phase = _Phase.gap);
-    _timer =
-        Timer(Duration(milliseconds: _config.interStimulusGapMs), _advance);
+    _timer = Timer(Duration(milliseconds: _jitteredGapMs()), _advance);
+  }
+
+  /// The base gap ± a random jitter (never below 50ms), so stimulus onsets are
+  /// unpredictable and can't be pre-empted by rhythmic tapping.
+  int _jitteredGapMs() {
+    final j = _config.interStimulusJitterMs;
+    if (j <= 0) return _config.interStimulusGapMs;
+    final delta = _rng.nextInt(2 * j + 1) - j;
+    return max(50, _config.interStimulusGapMs + delta);
   }
 
   void _onStimulusTap(TapDownDetails details) {

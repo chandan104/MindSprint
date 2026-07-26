@@ -35,6 +35,9 @@ const _level = AssessmentLevel(
     'target_ratio': 0.5,
     'display_time_ms': 400,
     'inter_stimulus_gap_ms': 200,
+    // Deterministic timing for these behavioural tests; jitter is exercised
+    // separately below.
+    'inter_stimulus_jitter_ms': 0,
   },
 );
 
@@ -155,6 +158,58 @@ void main() {
     expect(misses.length, 1, reason: 'the withheld target is an omission');
     expect(commissions.length, 1,
         reason: 'the tapped distractor is a commission error');
+  });
+
+  testWidgets('targets are never presented back-to-back (anti-clustering)',
+      (tester) async {
+    const spacedLevel = AssessmentLevel(
+      levelId: 'l2',
+      levelVersionId: 'lv2',
+      version: 1,
+      moduleKey: 'attention_focus',
+      name: 'Spaced',
+      difficulty: 'easy',
+      config: {
+        'category_key': 'animals',
+        'stimulus_count': 8,
+        'target_ratio': 0.5,
+        'display_time_ms': 400,
+        'inter_stimulus_gap_ms': 200,
+        'inter_stimulus_jitter_ms': 0,
+      },
+    );
+    await tester.binding.setSurfaceSize(const Size(900, 1500));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: FocusTapRunner(
+          runContext: AssessmentRunContext(
+            level: spacedLevel,
+            items: _items,
+            recorder: recorder,
+            timing: timing,
+            onFinished: (o) => outcome = o,
+          ),
+          random: Random(3),
+        ),
+      ),
+    ));
+
+    await tester.tap(find.text('Start'));
+    await tester.pump();
+    for (var i = 0; i < 8; i++) {
+      await passWindow(tester);
+    }
+
+    final targets = (await allEvents())
+        .where((e) => e.eventType == 'item_displayed')
+        .map((e) => e.payload['is_target'] as bool)
+        .toList();
+    expect(targets.length, 8);
+    for (var i = 1; i < targets.length; i++) {
+      expect(targets[i] && targets[i - 1], isFalse,
+          reason: 'no two targets may appear consecutively');
+    }
   });
 
   testWidgets('only the first tap in a window is recorded', (tester) async {
