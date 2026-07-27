@@ -7,6 +7,7 @@ import '../../../core/router/app_router.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../sync/application/sync_service.dart';
 import 'roster_providers.dart';
+import 'roster_widgets.dart';
 
 class ClassListScreen extends ConsumerStatefulWidget {
   const ClassListScreen({super.key});
@@ -64,28 +65,41 @@ class _ClassListScreenState extends ConsumerState<ClassListScreen> {
           onRetry: () => ref.invalidate(myClassesProvider),
         ),
         data: (items) => items.isEmpty
-            ? const Center(
-                child: Text('No classes assigned yet.\nAsk your school admin.',
-                    textAlign: TextAlign.center),
+            ? const RosterEmpty(
+                emoji: '🏫',
+                title: 'No classes assigned yet',
+                message: 'Ask your school admin to assign you a class.',
               )
-            : ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final schoolClass = items[index];
-                  return Card(
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        child: Text('${schoolClass.grade ?? '–'}'),
-                      ),
-                      title: Text(schoolClass.name,
-                          style: Theme.of(context).textTheme.titleLarge),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () =>
-                          context.go(AppRoutes.studentsFor(schoolClass.id)),
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const RosterHeader(
+                    title: 'Select a Class',
+                    subtitle: 'Choose a class to see its students.',
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                      itemCount: items.length,
+                      itemBuilder: (context, index) {
+                        final schoolClass = items[index];
+                        return Card(
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              child: Text('${schoolClass.grade ?? '–'}'),
+                            ),
+                            title: Text(schoolClass.name,
+                                style:
+                                    Theme.of(context).textTheme.titleLarge),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => context
+                                .go(AppRoutes.studentsFor(schoolClass.id)),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
       ),
     );

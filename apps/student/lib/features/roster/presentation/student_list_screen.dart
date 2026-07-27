@@ -8,6 +8,7 @@ import '../../session/domain/session_args.dart';
 import '../domain/roster_models.dart';
 import 'confirm_student_dialog.dart';
 import 'roster_providers.dart';
+import 'roster_widgets.dart';
 
 class StudentListScreen extends ConsumerWidget {
   final String classId;
@@ -59,27 +60,45 @@ class StudentListScreen extends ConsumerWidget {
           ),
         ),
         data: (items) => items.isEmpty
-            ? const Center(child: Text('No students in this class yet.'))
-            : ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final student = items[index];
-                  return Card(
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        child: Text(student.fullName.characters.first),
-                      ),
-                      title: Text(student.fullName,
-                          style: Theme.of(context).textTheme.titleLarge),
-                      subtitle: student.rollNumber == null
-                          ? null
-                          : Text('Roll ${student.rollNumber}'),
-                      trailing: const Icon(Icons.play_circle_outline, size: 32),
-                      onTap: () => _startForStudent(context, ref, student),
+            ? const RosterEmpty(
+                emoji: '🧑‍🎓',
+                title: 'No students in this class yet',
+                message: 'Ask your school admin to add students to this class.',
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const RosterHeader(
+                    title: 'Select a Student',
+                    subtitle: 'Tap a student to begin their assessment.',
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                      itemCount: items.length,
+                      itemBuilder: (context, index) {
+                        final student = items[index];
+                        return Card(
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              child: Text(student.fullName.characters.first),
+                            ),
+                            title: Text(student.fullName,
+                                style:
+                                    Theme.of(context).textTheme.titleLarge),
+                            subtitle: student.rollNumber == null
+                                ? null
+                                : Text('Roll ${student.rollNumber}'),
+                            trailing:
+                                const Icon(Icons.play_circle_outline, size: 32),
+                            onTap: () =>
+                                _startForStudent(context, ref, student),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
       ),
     );
