@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -69,10 +70,12 @@ export default async function StudentReportPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [{ student, sessions, notes }, role, cohort] = await Promise.all([
+  // Cohort comparison is the heaviest read (school-wide) and the most likely to
+  // be slow or fail, so it is NOT awaited here — it streams in its own Suspense
+  // boundary below and can never block or crash the rest of the page.
+  const [{ student, sessions, notes }, role] = await Promise.all([
     getStudentReport(id),
     currentUserRole(),
-    getCohortComparison(id),
   ]);
   const isTeacher = role === "teacher";
   const canErase = role === "school_admin" || role === "super_admin";
@@ -148,7 +151,9 @@ export default async function StudentReportPage({
 
       <CognitiveSnapshot profile={profile} />
 
-      <CohortComparisonCard data={cohort} />
+      <Suspense fallback={<CohortSkeleton />}>
+        <CohortSection studentId={id} />
+      </Suspense>
 
       {trustworthy.length >= 2 && (
         <div className="grid gap-6 lg:grid-cols-2">
@@ -379,5 +384,45 @@ export default async function StudentReportPage({
         of diagnosis.
       </p>
     </div>
+  );
+}
+
+/** Streams the (heavy, school-wide) cohort comparison independently. Its own
+ * try/catch means a slow or failing cohort read degrades to a small notice
+ * instead of throwing the whole student page into the error boundary. */
+async function CohortSection({ studentId }: { studentId: string }) {
+  try {
+    const cohort = await getCohortComparison(studentId);
+    return <CohortComparisonCard data={cohort} />;
+  } catch (error) {
+    console.error("[student report] cohort comparison failed", error);
+    return (
+      <Card>
+        <CardContent className="text-muted-foreground py-6 text-sm">
+          Class and school comparison is temporarily unavailable. The rest of
+          this report is unaffected — reload to try the comparison again.
+        </CardContent>
+      </Card>
+    );
+  }
+}
+
+function CohortSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base">Class &amp; school comparison</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex gap-4">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="bg-muted h-16 flex-1 animate-pulse rounded-md"
+            />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

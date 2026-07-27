@@ -16,8 +16,6 @@ type Row = {
   student_id: string;
   module_key: string;
   started_at: string;
-  was_interrupted: boolean;
-  status: string;
   students: { class_id: string } | null;
   session_metrics: {
     accuracy: number | null;
@@ -62,16 +60,25 @@ export async function getCohortComparison(
     };
   }
 
+  // Bound the scan to the last 90 days so the comparison stays fast and can't
+  // grow unbounded over a school year. This hits the partial index
+  // (school_id, started_at desc where validated & not interrupted) directly.
+  // "Recent cohort performance" is also the more meaningful comparison.
+  const since = new Date();
+  since.setDate(since.getDate() - 90);
+
   const { data, error } = await supabase
     .from("sessions")
     .select(
-      "student_id, module_key, started_at, was_interrupted, status, " +
+      "student_id, module_key, started_at, " +
         "students!inner(class_id), session_metrics(accuracy, extra)"
     )
     .eq("school_id", student.school_id)
     .eq("status", "validated")
     .eq("was_interrupted", false)
-    .limit(5000);
+    .gte("started_at", since.toISOString())
+    .order("started_at", { ascending: false })
+    .limit(3000);
   if (error) throw new Error(`Could not load cohort: ${error.message}`);
 
   const rows = (data ?? []) as unknown as Row[];
