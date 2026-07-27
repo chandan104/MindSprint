@@ -1,4 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for all network access (Supabase auth, session upload, etc.).
+         Flutter auto-adds this ONLY to debug/profile manifests, so it MUST be
+         declared here for release builds — without it every host lookup fails
+         with "No address associated with hostname" (errno 7). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Lets the app pause the retry queue / show offline state instead of
+         failing blindly when there is no connectivity. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <application
         android:label="mindsprint_student"
         android:name="${applicationName}"
