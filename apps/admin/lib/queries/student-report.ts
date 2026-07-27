@@ -51,9 +51,13 @@ export async function getStudentReport(studentId: string): Promise<{
       )
       .eq("student_id", studentId)
       .order("started_at", { ascending: true }),
+    // NOTE: teacher_notes.teacher_id references auth.users, not profiles, so an
+    // embedded `profiles(full_name)` has no FK for PostgREST to follow and errors
+    // ("Could not find a relationship … in the schema cache"). Author names are
+    // resolved in a separate, relationship-independent query below.
     supabase
       .from("teacher_notes")
-      .select("id, body, created_at, teacher_id, profiles(full_name)")
+      .select("id, body, created_at, teacher_id")
       .eq("student_id", studentId)
       .order("created_at", { ascending: false }),
   ]);
@@ -66,10 +70,39 @@ export async function getStudentReport(studentId: string): Promise<{
   if (notesRes.error) {
     throw new Error(`Could not load notes: ${notesRes.error.message}`);
   }
+
+  const rawNotes = (notesRes.data ?? []) as {
+    id: string;
+    body: string;
+    created_at: string;
+    teacher_id: string;
+  }[];
+
+  // Resolve author names (RLS-scoped: viewers who may not see other teachers'
+  // profiles simply get the "Teacher" fallback — same as the old embed).
+  const teacherIds = [...new Set(rawNotes.map((n) => n.teacher_id))];
+  const nameById = new Map<string, string>();
+  if (teacherIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", teacherIds);
+    for (const p of profiles ?? []) {
+      nameById.set(p.id as string, p.full_name as string);
+    }
+  }
+
+  const notes: StudentNote[] = rawNotes.map((n) => ({
+    ...n,
+    profiles: nameById.has(n.teacher_id)
+      ? { full_name: nameById.get(n.teacher_id)! }
+      : null,
+  }));
+
   return {
     student: studentRes.data as unknown as StudentHeader,
     sessions: sessionsRes.data as unknown as ReportSession[],
-    notes: notesRes.data as unknown as StudentNote[],
+    notes,
   };
 }
 
