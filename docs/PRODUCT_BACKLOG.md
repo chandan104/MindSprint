@@ -89,3 +89,15 @@ Maintained by the lead engineer; pruned when items ship or die.
   pgTAP loop; currently CI covers it.
 - **Sentry-style crash reporting** — evaluate against the no-third-party-SDK
   privacy rule; self-hosted or Supabase-native alternatives preferred.
+
+## Release optimization
+
+- **Re-enable R8/ProGuard and finalize release optimization before Play Store
+  publication.** R8 code-shrinking + resource-shrinking were temporarily
+  disabled for the v0.5.0 pilot APK (`isMinifyEnabled = false`,
+  `isShrinkResources = false` in `android/app/build.gradle.kts`) to make the
+  release build succeed reliably and optimise for delivery over size. Before a
+  Play Store release: re-enable both, add any missing keep rules
+  (`proguard-rules.pro`) for Drift / Supabase / flutter_secure_storage / JNI,
+  and verify a shrunk release APK runs every module end-to-end. Trigger: Play
+  Store publication (post-pilot).

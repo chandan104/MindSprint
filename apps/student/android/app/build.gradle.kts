@@ -60,8 +60,12 @@ android {
                 // docs/PILOT_READINESS.md "Release signing".
                 signingConfigs.getByName("debug")
             }
-            isMinifyEnabled = true
-            isShrinkResources = true
+            // Pilot builds optimise for delivery, not size: R8/ProGuard code
+            // shrinking is temporarily disabled so the release APK builds
+            // reliably. Re-enable before Play Store publication (backlog item
+            // "Re-enable R8/ProGuard and finalize release optimization").
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
