@@ -14,6 +14,7 @@ import '../../results/domain/provisional_metrics.dart';
 import '../../results/presentation/result_screen.dart';
 import '../../sync/application/sync_service.dart';
 import '../domain/session_args.dart';
+import 'assessment_instruction_screen.dart';
 import 'pin_prompt.dart';
 
 /// Runs one assessment session end-to-end:
@@ -35,6 +36,7 @@ class _SessionScreenState extends ConsumerState<SessionScreen>
   late final String _sessionId;
   late final TimingService _timing;
   late final SessionRecorder _recorder;
+  bool _started = false;
   bool _finished = false;
   bool _wasInterrupted = false;
 
@@ -49,8 +51,18 @@ class _SessionScreenState extends ConsumerState<SessionScreen>
       timing: _timing,
       store: DriftEventStore(ref.read(appDatabaseProvider)),
     );
+    // NB: the clock and session_started are deferred to _beginAssessment() so
+    // that reading the instruction screen never counts against the child's
+    // timing or scores.
+  }
+
+  /// Called when the child taps Start on the instruction screen: start the
+  /// monotonic clock and open the event log, then reveal the module.
+  void _beginAssessment() {
+    if (_started) return;
     _timing.start();
     _recorder.recordAndFlush('session_started');
+    setState(() => _started = true);
   }
 
   @override
@@ -62,7 +74,9 @@ class _SessionScreenState extends ConsumerState<SessionScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (_finished) return;
+    // Ignore lifecycle changes on the instruction screen — the clock isn't
+    // running yet, so there is nothing to taint or record.
+    if (!_started || _finished) return;
     // Reaction times spanning an interruption are meaningless; record the
     // fact and taint the session rather than pretending.
     if (state == AppLifecycleState.paused ||
@@ -182,13 +196,21 @@ class _SessionScreenState extends ConsumerState<SessionScreen>
                             'Module "${widget.args.level.moduleKey}" is not '
                             'available in this app version.'),
                       )
-                    : module.buildRunner(AssessmentRunContext(
-                        level: widget.args.level,
-                        items: widget.args.items,
-                        recorder: _recorder,
-                        timing: _timing,
-                        onFinished: _onModuleFinished,
-                      )),
+                    : !_started
+                        // One consistent, premium instruction screen before
+                        // every assessment. The clock starts only on Start.
+                        ? AssessmentInstructionScreen(
+                            level: widget.args.level,
+                            moduleName: module.displayName,
+                            onStart: _beginAssessment,
+                          )
+                        : module.buildRunner(AssessmentRunContext(
+                            level: widget.args.level,
+                            items: widget.args.items,
+                            recorder: _recorder,
+                            timing: _timing,
+                            onFinished: _onModuleFinished,
+                          )),
               ),
             ],
           ),
