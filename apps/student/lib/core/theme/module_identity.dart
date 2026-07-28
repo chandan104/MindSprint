@@ -23,7 +23,7 @@ class ModuleIdentity {
 
 const _fallback = ModuleIdentity(
   emoji: '🧩',
-  world: 'MindSprint',
+  world: 'Skill Lab',
   tagline: 'A new challenge awaits.',
   gradient: [Color(0xFF6366F1), Color(0xFF4F46E5)],
   accent: Color(0xFF818CF8),

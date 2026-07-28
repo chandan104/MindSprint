@@ -45,7 +45,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           children: [
             Icon(Icons.psychology_outlined, size: 72, color: scheme.primary),
             const SizedBox(height: 16),
-            Text('MindSprint',
+            Text('Skill Lab',
                 style: Theme.of(context).textTheme.headlineMedium),
             const SizedBox(height: 24),
             const SizedBox(

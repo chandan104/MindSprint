@@ -67,7 +67,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       size: 72, color: Theme.of(context).colorScheme.primary),
                   const SizedBox(height: 12),
                   Text(
-                    'MindSprint',
+                    'Skill Lab',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),

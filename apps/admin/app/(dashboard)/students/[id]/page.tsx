@@ -379,7 +379,7 @@ export default async function StudentReportPage({
         <Badge variant="outline" className="mr-2">
           Note
         </Badge>
-        Observations describe performance within MindSprint assessments only.
+        Observations describe performance within Skill Lab assessments only.
         They are educational comparisons, not measures of ability or any kind
         of diagnosis.
       </p>

@@ -44,7 +44,7 @@ export default async function DashboardLayout({
       <aside className="bg-sidebar border-sidebar-border flex w-56 flex-col border-r">
         <div className="flex items-center gap-2 px-4 py-5">
           <Brain className="text-primary size-6" aria-hidden />
-          <span className="text-lg font-semibold">MindSprint</span>
+          <span className="text-lg font-semibold">Skill Lab</span>
         </div>
         <nav className="flex-1 space-y-1 px-2">
           {nav.map(({ href, label, icon: Icon }) => (

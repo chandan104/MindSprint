@@ -89,7 +89,7 @@ export async function GET(
   const headerStyle = { fontWeight: "bold" as const };
 
   const summarySheet = [
-    [{ value: "MindSprint — Cognitive Summary", fontWeight: "bold" as const, span: 2 }],
+    [{ value: "Skill Lab — Cognitive Summary", fontWeight: "bold" as const, span: 2 }],
     [{ value: "Student" }, { value: student?.full_name ?? "" }],
     [
       { value: "Class" },

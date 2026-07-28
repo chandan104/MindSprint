@@ -16,7 +16,7 @@ export default function Error({
   useEffect(() => {
     // Production error surface; replace with a real monitoring sink when one
     // is adopted (backlog).
-    console.error("[MindSprint admin] unhandled error", error);
+    console.error("[Skill Lab admin] unhandled error", error);
   }, [error]);
 
   return (

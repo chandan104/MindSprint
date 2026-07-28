@@ -35,7 +35,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="items-center text-center">
           <Brain className="text-primary size-10" aria-hidden />
-          <CardTitle className="text-2xl">MindSprint Admin</CardTitle>
+          <CardTitle className="text-2xl">Skill Lab Admin</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={signIn} className="space-y-4">

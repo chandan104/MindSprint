@@ -43,7 +43,7 @@ class MindSprintApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'MindSprint',
+      title: 'Skill Lab',
       theme: AppTheme.dark(),
       routerConfig: buildRouter(),
       debugShowCheckedModeBanner: false,

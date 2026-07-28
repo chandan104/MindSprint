@@ -123,7 +123,7 @@ export function CognitiveSnapshot({ profile }: { profile: CognitiveProfile }) {
           </>
         )}
         <p className="text-muted-foreground text-xs">
-          Performance indices within MindSprint assessments — educational
+          Performance indices within Skill Lab assessments — educational
           comparison only, not a measure of ability or any diagnosis.
         </p>
       </CardContent>

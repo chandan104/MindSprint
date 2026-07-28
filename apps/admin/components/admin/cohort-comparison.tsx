@@ -53,7 +53,7 @@ export function CohortComparisonCard({ data }: { data: CohortComparison }) {
           </p>
         )}
         <p className="text-muted-foreground text-xs">
-          Overall performance index across MindSprint assessments — an
+          Overall performance index across Skill Lab assessments — an
           educational comparison, not a ranking or a measure of ability.
         </p>
       </CardContent>

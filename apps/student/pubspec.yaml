@@ -1,5 +1,5 @@
 name: mindsprint_student
-description: "MindSprint student app — teacher-supervised cognitive assessments."
+description: "Skill Lab student app — teacher-supervised cognitive assessments."
 publish_to: 'none'
 
 version: 0.5.2+10
@@ -31,6 +31,18 @@ dev_dependencies:
   mocktail: ^1.0.0
   fake_async: ^1.3.0
   sqlite3: ^2.4.0
+  flutter_launcher_icons: ^0.14.1
+
+# Launcher icon generation (run: dart run flutter_launcher_icons).
+# Drop the square Skill Lab logo (>=1024x1024 PNG) at the image_path below,
+# then run the command to regenerate Android/iOS launcher icons.
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/branding/skill_lab_logo.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/branding/skill_lab_logo.png"
 
 flutter:
   uses-material-design: true

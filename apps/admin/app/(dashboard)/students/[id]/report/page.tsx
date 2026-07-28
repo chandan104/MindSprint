@@ -83,7 +83,7 @@ export default async function StudentReportPrintPage({
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold">MindSprint Assessment Report</h1>
+          <h1 className="text-2xl font-bold">Skill Lab Assessment Report</h1>
           <p className="text-muted-foreground text-sm">
             {student.full_name} · {student.classes?.name ?? "No class"}
             {student.roll_number ? ` · Roll ${student.roll_number}` : ""}
@@ -155,7 +155,7 @@ export default async function StudentReportPrintPage({
       </div>
 
       <p className="text-muted-foreground border-t pt-4 text-xs">
-        This report describes performance within MindSprint educational
+        This report describes performance within Skill Lab educational
         assessments. It is not a psychological, medical, or diagnostic
         evaluation. Indices are educational comparisons intended to support
         teaching, not to label or rank children.
