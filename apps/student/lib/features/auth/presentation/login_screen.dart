@@ -63,8 +63,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(Icons.psychology_outlined,
-                      size: 72, color: Theme.of(context).colorScheme.primary),
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Image.asset(
+                        'assets/branding/skill_lab_logo.png',
+                        width: 104,
+                        height: 104,
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     'Skill Lab',

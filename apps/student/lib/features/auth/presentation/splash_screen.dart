@@ -37,13 +37,23 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.psychology_outlined, size: 72, color: scheme.primary),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Image.asset(
+                'assets/branding/skill_lab_logo.png',
+                width: 96,
+                height: 96,
+              ),
+            ),
             const SizedBox(height: 16),
             Text('Skill Lab',
                 style: Theme.of(context).textTheme.headlineMedium),

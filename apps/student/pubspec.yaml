@@ -2,7 +2,7 @@ name: mindsprint_student
 description: "Skill Lab student app — teacher-supervised cognitive assessments."
 publish_to: 'none'
 
-version: 0.5.2+10
+version: 0.5.3+11
 
 environment:
   sdk: ^3.12.2
@@ -46,3 +46,5 @@ flutter_launcher_icons:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/branding/skill_lab_logo.png
